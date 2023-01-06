@@ -1,26 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { SnackbarProvider } from "notistack";
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { PrivateRoute } from './components/routing/PrivateRoute';
+import NotFound from './components/content/NotFound';
+import SignIn from './components/content/SingIn';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <SnackbarProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            {/* <Route path="/" element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>}
+              >
+                <Route path="/" element={<MainSite />} />
+                <Route path="/clients" element={<Clients />} />
+              </Route>
+              
+              {/* <Route path="/*" element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              } /> */}
+              <Route path="/login" element={<SignIn />} />
+              <Route path="/*" element={<NotFound />} /> 
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </SnackbarProvider>
   );
 }
-
 export default App;
