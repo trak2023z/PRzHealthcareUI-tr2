@@ -2,10 +2,17 @@ import { SnackbarProvider } from "notistack";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { PrivateRoute } from './components/routing/PrivateRoute';
 import NotFound from './components/content/NotFound';
-import SignIn from './components/content/SingIn';
+import SignIn from './components/content/SignIn';
+import SignUp from './components/content/SignUp';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { plPL } from '@mui/x-date-pickers/locales';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/pl';
 
 function App() {
   return (
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl" localeText={plPL.components.MuiLocalizationProvider.defaultProps.localeText}>
     <SnackbarProvider>
       <div className="App">
         <BrowserRouter>
@@ -25,11 +32,13 @@ function App() {
                 </PrivateRoute>
               } /> */}
               <Route path="/login" element={<SignIn />} />
+              <Route path="/register" element={<SignUp />} />
               <Route path="/*" element={<NotFound />} /> 
           </Routes>
         </BrowserRouter>
       </div>
     </SnackbarProvider>
+    </LocalizationProvider>
   );
 }
 export default App;

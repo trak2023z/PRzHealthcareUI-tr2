@@ -5,5 +5,5 @@ export const apiConfig = {
 };
 
 export default axios.create({
-  baseURL: `http://192.168.5.143:5000/`
+  baseURL: `http://192.168.5.143:7209/`
 });
