@@ -86,24 +86,24 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
             </section>
             <section>
                 <Controller
-  control={control}
-  name="dateOfBirth"
-  render={({ field: { ...field }}) => (
-    <DatePicker
-      {...field}
-      openTo="year"
-          views={['year', 'month', 'day']}
-      label="Data urodzenia *"
-      renderInput={(inputProps) => (
-        <TextField
-          {...inputProps}
-          error={!!errors.dateOfBirth}
-          helperText={errors.dateOfBirth ? errors.dateOfBirth?.message : ''}
-        />
-      )}
-    />
-  )}
-/>
+                control={control}
+                name="dateOfBirth"
+                render={({ field: { ...field }}) => (
+                    <DatePicker
+                    {...field}
+                    openTo="year"
+                        views={['year', 'month', 'day']}
+                    label="Data urodzenia *"
+                    renderInput={(inputProps) => (
+                        <TextField
+                        {...inputProps}
+                        error={!!errors.dateOfBirth}
+                        helperText={errors.dateOfBirth ? errors.dateOfBirth?.message : ''}
+                        />
+                    )}
+                    />
+                )}
+                />
             </section>
             <section>
                 <Controller name="pesel" control={control} render={({ field }) => (
