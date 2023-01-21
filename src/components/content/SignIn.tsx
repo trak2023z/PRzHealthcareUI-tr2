@@ -39,9 +39,9 @@ export default function SignIn() {
     })
       .catch((error) => {
         enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "bottom", horizontal: "left" },
+          anchorOrigin: { vertical: "top", horizontal: "right" },
           variant: "error",
-          autoHideDuration: 4000
+          autoHideDuration: 5000
         });
       });
   };

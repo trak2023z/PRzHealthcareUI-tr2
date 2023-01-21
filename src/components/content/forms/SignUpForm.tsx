@@ -56,19 +56,19 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: '20px' }}>
             <section>
                 <Controller name="login" control={control} render={({ field }) => (
-                    <TextField {...field} label="Login *" fullWidth variant="outlined" error={!!errors.login}
+                    <TextField {...field} label="Login" required fullWidth variant="outlined" error={!!errors.login}
                         helperText={errors.login ? errors.login?.message : ''} />
                 )} />
             </section>
             <section>
-                <Controller name="password" control={control} render={({ field }) => (
-                    <TextField {...field} label="Hasło *" fullWidth variant="outlined" error={!!errors.password}
+                <Controller name="password"  control={control} render={({ field }) => (
+                    <TextField {...field} type="password" required label="Hasło" fullWidth variant="outlined" error={!!errors.password}
                         helperText={errors.password ? errors.password?.message : ''} />
                 )} />
             </section>
             <section>
                 <Controller name="firstname" control={control} render={({ field }) => (
-                    <TextField {...field} label="Imię *" fullWidth variant="outlined" error={!!errors.firstname}
+                    <TextField {...field} label="Imię" required fullWidth variant="outlined" error={!!errors.firstname}
                         helperText={errors.firstname ? errors.firstname?.message : ''} />
                 )} />
             </section>
@@ -80,7 +80,7 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
             </section>
             <section>
                 <Controller name="lastname" control={control} render={({ field }) => (
-                    <TextField {...field} label="Nazwisko *" fullWidth variant="outlined" error={!!errors.lastname}
+                    <TextField {...field} label="Nazwisko" required fullWidth variant="outlined" error={!!errors.lastname}
                         helperText={errors.lastname ? errors.lastname?.message : ''} />
                 )} />
             </section>
@@ -93,10 +93,11 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
                     {...field}
                     openTo="year"
                         views={['year', 'month', 'day']}
-                    label="Data urodzenia *"
+                    label="Data urodzenia"
                     renderInput={(inputProps) => (
                         <TextField
                         {...inputProps}
+                        required
                         error={!!errors.dateOfBirth}
                         helperText={errors.dateOfBirth ? errors.dateOfBirth?.message : ''}
                         />
@@ -113,13 +114,13 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
             </section>
             <section>
                 <Controller name="email" control={control} render={({ field }) => (
-                    <TextField {...field} type="email" label="E-mail *" fullWidth variant="outlined" error={!!errors.email}
+                    <TextField {...field} type="email" label="E-mail" required fullWidth variant="outlined" error={!!errors.email}
                         helperText={errors.email ? errors.email?.message : ''} />
                 )} />
             </section>
             <section>
                 <Controller name="contactNumber" control={control} render={({ field }) => (
-                    <TextField {...field} label="Telefon *" fullWidth variant="outlined" error={!!errors.contactNumber}
+                    <TextField {...field} label="Telefon" required fullWidth variant="outlined" error={!!errors.contactNumber}
                         helperText={errors.contactNumber ? errors.contactNumber?.message : ''} />
                 )} />
 
