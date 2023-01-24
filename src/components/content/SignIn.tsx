@@ -30,7 +30,6 @@ export default function SignIn() {
 
   const handleLogin = (data: LoginData) => {
     loginAccount(data).then((res) => {
-
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('login', res.data.login);
       localStorage.setItem('name', res.data.name);

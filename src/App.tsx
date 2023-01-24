@@ -9,7 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { plPL } from '@mui/x-date-pickers/locales';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/pl';
-import Dashboard from "./components/content/Dashboard";
+import Dashboard from "./components/content/dashboard/Dashboard";
 
 function App() {
   return (
