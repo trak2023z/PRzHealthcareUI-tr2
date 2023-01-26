@@ -138,9 +138,11 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
             </section>
             <section></section>
             <section>
-                <Link to="/login">
-                  Masz już konto? Zaloguj się
+            <Button variant="contained" color="secondary" >
+                <Link to="/login" style={{ textDecoration: 'none', color:'white' }}>
+                  {'Masz już konto? Zaloguj się'}
                 </Link>
+                </Button>
                 </section>
         </div>
         

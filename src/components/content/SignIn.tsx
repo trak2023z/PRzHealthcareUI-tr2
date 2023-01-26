@@ -16,6 +16,8 @@ import { loginAccount, LoginData } from '../../api/ApiAccount';
 import { loginSchema } from '../../validators/accountValidator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
+import { postResetPasswordNotification } from '../../api/ApiNotification';
+import { SetStateAction, useState } from 'react';
 
 
 export default function SignIn() {
@@ -25,16 +27,29 @@ export default function SignIn() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginData>({
     resolver: yupResolver(loginSchema),
   });
-
+  const [reminderEmail, setReminderEmail] = useState('');
+  const [showReminderEmail, setShowReminderEmail] = useState(false);
   let navigate = useNavigate();
+  const handleSetReminderEmail = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setReminderEmail(event.target.value);
+  };
 
   const handleLogin = (data: LoginData) => {
     loginAccount(data).then((res) => {
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('login', res.data.login);
-      localStorage.setItem('name', res.data.name);
-      localStorage.setItem('atyId', res.data.roleId.toString());
-      navigate('/');
+      if(res.data.atyId == 1002){
+        enqueueSnackbar("Konto nie zostało potwierdzone. Sprawdź skrzynkę mailową.", {
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+          variant: "error",
+          autoHideDuration: 6000
+        });
+      }
+      else{
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('login', res.data.login);
+        localStorage.setItem('name', res.data.name);
+        localStorage.setItem('atyId', res.data.atyId.toString());
+        navigate('/');
+      }
     })
       .catch((error) => {
         enqueueSnackbar(error.response.data.message, {
@@ -120,16 +135,54 @@ export default function SignIn() {
             </Button>
 
             <Grid container>
-              <Grid item xs>
-                {/* <Link href="#" variant="body2">
+            <Grid item xs>
+                <Button variant="contained" color="secondary" onClick={() => {setShowReminderEmail(true)}}>
                   Zapomniałeś hasła?
-                </Link> */}
+                </Button>
               </Grid>
               <Grid item>
-                <Link to="/register">
-                  {'Utwórz konto'}
+                <Button variant="contained" color="secondary" >
+                <Link to="/register" style={{ textDecoration: 'none', color:'white' }}>
+                  {'Zarejestruj się'}
                 </Link>
+                </Button>
               </Grid>
+              {showReminderEmail && (<Grid container md={12}>
+              <Grid item md={12}>
+                  <TextField
+                margin="normal"
+                fullWidth
+                label="Podaj adres e-mail"
+                onChange={handleSetReminderEmail}
+                value={reminderEmail}
+                type="email"
+              />
+              </Grid>
+              <Grid item md={12}>
+                <Button onClick={() => {
+                  postResetPasswordNotification({reminderEmail})
+                  .then(() => {
+                    enqueueSnackbar("Jeżeli adres jest w bazie danych, wiadomość zostanie wysłana.", {
+                      anchorOrigin: { vertical: "bottom", horizontal: "left" },
+                      variant: 'info',
+                      autoHideDuration: 8000
+                    });
+                  })
+                  .catch((error) => {
+                    enqueueSnackbar(error.response.data.message, {
+                      anchorOrigin: { vertical: "bottom", horizontal: "left" },
+                      variant: "error",
+                      autoHideDuration: 4000
+                    });
+                  });
+                }}
+                variant="contained"
+                color="secondary"
+                fullWidth>
+                  Przypomnij hasło
+                </Button>
+              </Grid>
+            </Grid>)}
             </Grid>
             <Copyright sx={{ mt: 5 }} />
           </Box>
