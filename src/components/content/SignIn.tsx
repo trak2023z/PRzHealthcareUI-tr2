@@ -36,20 +36,11 @@ export default function SignIn() {
 
   const handleLogin = (data: LoginData) => {
     loginAccount(data).then((res) => {
-      if(res.data.atyId == 1002){
-        enqueueSnackbar("Konto nie zostało potwierdzone. Sprawdź skrzynkę mailową.", {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 6000
-        });
-      }
-      else{
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('login', res.data.login);
         localStorage.setItem('name', res.data.name);
         localStorage.setItem('atyId', res.data.atyId.toString());
         navigate('/');
-      }
     })
       .catch((error) => {
         enqueueSnackbar(error.response.data.message, {

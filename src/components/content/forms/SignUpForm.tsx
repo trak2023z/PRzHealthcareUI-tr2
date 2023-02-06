@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 import Stack from '@mui/material/Stack';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack'
-import { RegisterData } from '../../../api/ApiAccount';
+import { registerAccount, RegisterData } from '../../../api/ApiAccount';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Avatar, Box } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -27,7 +27,7 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
         password: yup.string().required(),
         firstname: yup.string().required(),
         secondname: yup.string().nullable(),
-        photoBinare: yup.string().nullable(),
+        // photoBinary: yup.string().nullable(),
         lastname: yup.string().required(),
         dateOfBirth: yup.date().required(),
         pesel: yup.string().required(),
@@ -38,7 +38,21 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
     const { enqueueSnackbar } = useSnackbar();
 
     const submitHandler: SubmitHandler<RegisterData> = (data: RegisterData) => {
-
+        console.log(data);
+        registerAccount(data).then(() => {
+            enqueueSnackbar("Konto zostało utworzone. Sprawdź skrzynkę pocztową celem potwierdzenia.", {
+                anchorOrigin: { vertical: "top", horizontal: "right" },
+                variant: "success",
+                autoHideDuration: 6000
+              });
+        })
+          .catch((error) => {
+            enqueueSnackbar(error.response.data.message, {
+              anchorOrigin: { vertical: "top", horizontal: "right" },
+              variant: "error",
+              autoHideDuration: 5000
+            });
+          });
     }
     
     const { control, handleSubmit, formState: { errors } } = useForm<RegisterData>({ resolver: yupResolver(signUpSchema)});
