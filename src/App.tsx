@@ -9,7 +9,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { plPL } from '@mui/x-date-pickers/locales';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/pl';
-import Dashboard from "./components/content/dashboard/Dashboard";
+import ClientDashboardContent from "./components/content/dashboard/ClientDashboard";
+import MailConfirmed from "./components/content/MailConfirmed";
 
 function App() {
   return (
@@ -34,7 +35,8 @@ function App() {
               } /> */}
               <Route path="/login" element={<SignIn />} />
               <Route path="/register" element={<SignUp />} />
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/account/confirm-mail" element={<MailConfirmed />} />
+              <Route path="/" element={<ClientDashboardContent />} />
               <Route path="/*" element={<NotFound />} /> 
           </Routes>
         </BrowserRouter>
