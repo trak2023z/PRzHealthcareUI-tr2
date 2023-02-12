@@ -21,10 +21,37 @@ export type RegisterData = {
   contactNumber: string;
 };
 
+export type UserData = {
+  id: number
+  atyId: number;
+  login: string;
+  password: string;
+  photoBinary: string;
+  firstname: string;
+  secondname: string;
+  lastname: string;
+  dateOfBirth: Date;
+  pesel: number;
+  email: string;
+  contactNumber: string;
+  isActive: boolean;
+  insertedDate: Date;
+  modifiedDate: Date;
+}
+
 export const loginAccount = (data: LoginData) => {
   return Api.post('/account/login', data);
 };
 
 export const registerAccount = (data: RegisterData) => {
   return Api.post('/account/register', data);
+}
+export const confirmAccount = () => {
+  return Api.get('/account/confirm-mail');
+}
+
+export const getDoctors = () => {
+  return Api.get('/account/getdoctorslist', {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
 }
