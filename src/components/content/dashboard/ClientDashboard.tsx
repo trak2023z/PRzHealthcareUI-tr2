@@ -170,10 +170,9 @@ export default function ClientDashboardContent() {
         onClose={handleCloseAddEditEventDialog}
         fullScreen>
         <DialogContent>
-          <EventAddEditForm onClose={handleCloseAddEditEventDialog}/>
+          <EventAddEditForm onClose={handleCloseAddEditEventDialog} doctorsList={doctorsList} vaccinationsList={vaccinationList}/>
         </DialogContent>
       </Dialog>
       </Box>
-      
   );
 }

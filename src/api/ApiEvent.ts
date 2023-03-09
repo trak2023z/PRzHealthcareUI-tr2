@@ -3,8 +3,10 @@ import Api from './ApiGlobal';
 export type EventInformation = {
     id: number,
     accId: number,
-    timeFrom: Date,
-    timeTo: Date,
+    dateFrom: Date,
+    timeFrom: string,
+    DateTo: Date
+    timeTo: string,
     type: number,
     doctorId: number,
     vacId: number,
