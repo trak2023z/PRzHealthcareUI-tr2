@@ -17,3 +17,22 @@ export type EventInformation = {
     modifiedDate: Date,
     modifiedAccId: number
 };
+
+export type EventBasicInformation = {
+    dateFrom: String,
+    doctorId: String
+}
+
+export const getUserEvents = ( accountId: Number) => {
+    return Api.get('/event/getuserevents', {
+        params: {accountId},
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }
+
+export const getAvailableDays = ( selectedDate: String, selectedDoctorId: String) => {
+    return Api.get('/event/getavailabledates', {
+        params: {selectedDate, selectedDoctorId},
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }

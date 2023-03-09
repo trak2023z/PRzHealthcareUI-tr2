@@ -9,7 +9,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Header from '../Header';
 import Copyright from '../Copyright';
-import { Button, Dialog, DialogContent, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { Calendar } from 'primereact/calendar';
 import { useEffect, useState } from 'react';
 import { addLocale, locale } from 'primereact/api';
@@ -21,12 +21,16 @@ import { getDoctors, UserData } from '../../../api/ApiAccount';
 import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router';
 import { getVaccinationList, VaccinationInformation } from '../../../api/ApiVaccination';
+import { EventInformation, getUserEvents } from '../../../api/ApiEvent';
+import userEvent from '@testing-library/user-event';
 
 export default function ClientDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [vaccinationList, setVaccinationList] = useState<VaccinationInformation[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | Date[] | undefined | null | string>(undefined);
+  const [eventList, setEventList] = useState<EventInformation[]>([]);
+
   let navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -35,9 +39,23 @@ export default function ClientDashboardContent() {
   }
 
   useEffect(() => {
+    getUserEvents(Number(localStorage.getItem('accId'))).then((res) => {
+      setEventList(res.data);
+      console.log(res.data);
+    })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate('/login');
+        }
+        enqueueSnackbar(error.response.data.message, {
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+          variant: "error",
+          autoHideDuration: 5000
+        });
+      });
     getDoctors().then((res) => {
       setDoctorsList(res.data);
-      console.log(res.data);
     })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -52,7 +70,6 @@ export default function ClientDashboardContent() {
       });
     getVaccinationList().then((res) => {
       setVaccinationList(res.data);
-      console.log(res.data);
     })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -116,51 +133,56 @@ export default function ClientDashboardContent() {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
             <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={5} lg={4}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: "6vh",
-                  }}
-                >
-                  <Typography align='center'>Twoje zaplanowane wizyty</Typography>
-                </Paper>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Typography align='center'>Brak zaplanowanych wizyt</Typography>
-                  <br/>
-                  <Button variant="contained"
-                    onClick={() => {
-                      setOpenAddEditEventDialog(true);
-                    }}>Zaplanuj wizytę</Button>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={6} lg={8}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                <Calendar value={selectedDate} 
-                  dateFormat="dd/mm/yyyy"
-                  onChange={(e) => {
-                    return setSelectedDate(e.value);
-                  }} inline showWeek />
-                </Paper>
-              </Grid>
-              
+              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={5} lg={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: "6vh",
+                }}
+              >
+              <Typography align='center'>Twoje zaplanowane wizyty</Typography>
+              </Paper>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+              <List disablePadding>
+              {eventList.map((event) => (
+                  <ListItem disablePadding key={event.id}>
+                      <ListItemText>* {event.timeFrom}</ListItemText>
+                  </ListItem>
+                ))}
+              </List>
+              <br/>
+              <Button variant="contained"
+                onClick={() => {
+                  setOpenAddEditEventDialog(true);
+                }}>Zaplanuj wizytę</Button>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={8}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+              <Calendar value={selectedDate} 
+                dateFormat="dd/mm/yyyy"
+                onChange={(e) => {
+                  return setSelectedDate(e.value);
+                }} inline showWeek />
+              </Paper>
+            </Grid>
             </Grid>
             <Copyright sx={{ pt: 4 }} />
           </Container>

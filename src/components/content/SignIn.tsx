@@ -38,6 +38,7 @@ export default function SignIn() {
     loginAccount(data).then((res) => {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('login', res.data.login);
+        localStorage.setItem('accId', res.data.accId);
         localStorage.setItem('name', res.data.name);
         localStorage.setItem('atyId', res.data.atyId.toString());
         navigate('/');
