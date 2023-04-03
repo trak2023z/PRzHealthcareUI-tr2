@@ -11,6 +11,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/pl';
 import ClientDashboardContent from "./components/content/dashboard/ClientDashboard";
 import MailConfirmed from "./components/content/MailConfirmed";
+import UserProfileSettings from "./components/content/UserProfileSettings";
+import Dashboard from "./components/content/dashboard/Dashboard";
 
 function App() {
   return (
@@ -19,24 +21,18 @@ function App() {
       <div className="App">
         <BrowserRouter>
           <Routes>
-            {/* <Route path="/" element={
+          <Route path="/" element={
                 <PrivateRoute>
                   <Dashboard />
                 </PrivateRoute>}
               >
-                <Route path="/" element={<MainSite />} />
-                <Route path="/clients" element={<Clients />} />
-              </Route>
-              
-              {/* <Route path="/*" element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              } /> */}
+                <Route path="/" element={<ClientDashboardContent />} />
+                <Route path="/usersettings" element={<UserProfileSettings />} />
+                </Route>
+
               <Route path="/login" element={<SignIn />} />
               <Route path="/register" element={<SignUp />} />
               <Route path="/account/confirm-mail" element={<MailConfirmed />} />
-              <Route path="/" element={<ClientDashboardContent />} />
               <Route path="/*" element={<NotFound />} /> 
           </Routes>
         </BrowserRouter>

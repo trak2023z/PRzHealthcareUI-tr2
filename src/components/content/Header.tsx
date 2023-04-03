@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { UseAuthenticatedUser } from '../../hooks/UseAuthenticatedUser';
 import Divider from '@mui/material/Divider';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Typography } from '@mui/material';
 
 interface HeaderProps {
@@ -46,7 +46,7 @@ export default function Header() {
               pr: '24px',
             }}
           >
-            <img src="/logo192.png" width={50}/>
+            <Link to="/" style={{ textDecoration: 'none' }} ><img src="../../assets/prz_favicon.ico" width={50}/></Link>
             <Typography
               component="h1"
               variant="h5"
@@ -54,48 +54,48 @@ export default function Header() {
               noWrap
               sx={{ flexGrow: 1, fontFamily:'"Candara"'}}
             >
-              Klinika PRz Healthcare
+              <Link to="/" style={{ textDecoration: 'none', color: 'white' }} > Klinika PRz Healthcare</Link>
             </Typography>
             <IconButton color="inherit">
               <IconButton color="inherit" sx={{ p: 1 }}
-                                aria-controls={open ? 'demo-positioned-menu' : undefined}
-                                aria-haspopup="true"
-                                aria-expanded={open ? 'true' : undefined}
-                                onClick={handleClick}>
-                                    {localStorage.getItem('avatar') !== 'null'?
-                                    <Avatar src={`data:image/jpeg;base64,${localStorage.getItem('avatar')}`}/>
-                                :
-                                <Avatar >
-                                    <Typography>
-                                        <h3 style={{color:'whitesmoke'}}>{capitalizeFirst(localStorage.getItem('login'))}</h3>
-                                    </Typography>
-                                </Avatar>}
-                            </IconButton>
-
-                            <Menu
-                                id="demo-positioned-menu"
-                                aria-labelledby="demo-positioned-button"
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleCloseMenu}
-                                anchorOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'left',
-                                }}
-                                transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'left',
-                                }}
-                            >
-                                <MenuItem>{localStorage.getItem('name')}</MenuItem>
-                                <Divider />
-                                <MenuItem onClick={() => {
-                                    navigate('/usersettings');
-                                    handleCloseMenu();
-                                    }}>Profil</MenuItem>
-                                {/* <MenuItem onClick={handleClose}>Ustawienia</MenuItem> */}
-                                <MenuItem onClick={logout}>Wyloguj</MenuItem>
-                            </Menu>
+                aria-controls={open ? 'demo-positioned-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={handleClick}>
+                    {/* {localStorage.getItem('avatar') !== 'null'?
+                    <Avatar src={`data:image/jpeg;base64,${localStorage.getItem('avatar')}`}/>
+                : */}
+                <Avatar >
+                    <Typography>
+                        <h2 style={{color:'whitesmoke'}}>{capitalizeFirst(localStorage.getItem('login'))}</h2>
+                    </Typography>
+                </Avatar>
+                {/* } */}
+                </IconButton>
+                <Menu
+                    id="demo-positioned-menu"
+                    aria-labelledby="demo-positioned-button"
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleCloseMenu}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                >
+                    <MenuItem>{localStorage.getItem('name')}</MenuItem>
+                    <Divider />
+                    <MenuItem onClick={() => {
+                        navigate('/usersettings');
+                        handleCloseMenu();
+                        }}>Profil</MenuItem>
+                    {/* <MenuItem onClick={handleClose}>Ustawienia</MenuItem> */}
+                    <MenuItem onClick={logout}>Wyloguj</MenuItem>
+                </Menu>
             </IconButton>
           </Toolbar>
           </AppBar>

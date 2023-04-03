@@ -18,6 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
 import { postResetPasswordNotification } from '../../api/ApiNotification';
 import { SetStateAction, useState } from 'react';
+import prz_logo from '../../assets/prz_logo.png'
 
 
 export default function SignIn() {
@@ -57,7 +58,7 @@ export default function SignIn() {
   }
 
   return (
-    <Grid container component="main" sx={{ height: '100vh' }}>
+    <Grid container component="main"  sx={{ height: '100vh' }}>
 
       <CssBaseline />
       <Grid
@@ -66,7 +67,7 @@ export default function SignIn() {
         sm={4}
         md={7}
         sx={{
-          backgroundImage: 'url(https://lorempokemon.fakerapi.it/pokemon)',
+          backgroundImage: `url(${prz_logo})`,
           backgroundRepeat: 'no-repeat',
           backgroundColor: (t) =>
             t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
@@ -113,10 +114,6 @@ export default function SignIn() {
               autoComplete="current-password"
               {...register('password')}
             />
-            {/* <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Zapamiętaj mnie"
-            /> */}
             <Button
               type="submit"
               fullWidth

@@ -22,9 +22,10 @@ import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router';
 import { getVaccinationList, VaccinationInformation } from '../../../api/ApiVaccination';
 import { EventInformation, getUserEvents } from '../../../api/ApiEvent';
+import { Outlet } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
-export default function ClientDashboardContent() {
+export default function Dashboard() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [vaccinationList, setVaccinationList] = useState<VaccinationInformation[]>([]);
@@ -129,62 +130,7 @@ export default function ClientDashboardContent() {
             overflow: 'auto',
           }}
         >
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={5} lg={4}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: "6vh",
-                }}
-              >
-              <Typography align='center'>Twoje zaplanowane wizyty</Typography>
-              </Paper>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-              <List disablePadding>
-              {eventList.map((event) => (
-                  <ListItem disablePadding key={event.id}>
-                      <ListItemText>* {event.timeFrom}</ListItemText>
-                  </ListItem>
-                ))}
-              </List>
-              <br/>
-              <Button variant="contained"
-                onClick={() => {
-                  setOpenAddEditEventDialog(true);
-                }}>Zaplanuj wizytę</Button>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={8}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-              <Calendar value={selectedDate} 
-                dateFormat="dd/mm/yyyy"
-                onChange={(e) => {
-                  return setSelectedDate(e.value);
-                }} inline showWeek />
-              </Paper>
-            </Grid>
-            </Grid>
-            <Copyright sx={{ pt: 4 }} />
-          </Container>
+            <Outlet />
         </Box>
         <Dialog
         open={openAddEditEventDialog}

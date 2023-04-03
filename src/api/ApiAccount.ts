@@ -38,6 +38,11 @@ export type UserData = {
   insertedDate: Date;
   modifiedDate: Date;
 }
+export type ChangePasswordData = {
+  oldPassword: string;
+  newPassword: string;
+  newPasswordRepeat: string;
+};
 
 export const loginAccount = (data: LoginData) => {
   return Api.post('/account/login', data);
@@ -55,3 +60,13 @@ export const getDoctors = () => {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 }
+export const changePassword = (data: ChangePasswordData) => {
+  return Api.put('/account/changepassword', data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+};
+// export const getUserData = () => {
+//   return Api.get('/account/getdata', {
+//     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+//   });
+// };
