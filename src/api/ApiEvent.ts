@@ -5,7 +5,7 @@ export type EventInformation = {
     accId: number,
     dateFrom: Date,
     timeFrom: string,
-    DateTo: Date
+    dateTo: Date
     timeTo: string,
     type: number,
     doctorId: number,
@@ -36,3 +36,8 @@ export const getAvailableDays = ( selectedDate: String, selectedDoctorId: String
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
   }
+export const patchEventTerm = (data: EventInformation) => {
+  return Api.patch('/event/takeeventterm', data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+};

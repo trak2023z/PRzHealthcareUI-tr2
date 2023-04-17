@@ -43,6 +43,9 @@ export type ChangePasswordData = {
   newPassword: string;
   newPasswordRepeat: string;
 };
+export type ResetPasswordData = {
+  email: string
+}
 
 export const loginAccount = (data: LoginData) => {
   return Api.post('/account/login', data);
@@ -51,8 +54,10 @@ export const loginAccount = (data: LoginData) => {
 export const registerAccount = (data: RegisterData) => {
   return Api.post('/account/register', data);
 }
-export const confirmAccount = () => {
-  return Api.get('/account/confirm-mail');
+export const confirmAccount = (hashCode: string | null) => {
+  return Api.get('/account/confirm-mail',{
+    params: {hashCode}
+  });
 }
 
 export const getDoctors = () => {
@@ -65,6 +70,17 @@ export const changePassword = (data: ChangePasswordData) => {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 };
+export const resetPassword = (email: string) => {
+  return Api.put('/account/reset-password', {
+    email: email,
+  });
+};
+export const resetPasswordCheckHashCode = (data: string) => {
+  return Api.put('/account/reset-passwordcheck', data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+};
+
 // export const getUserData = () => {
 //   return Api.get('/account/getdata', {
 //     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

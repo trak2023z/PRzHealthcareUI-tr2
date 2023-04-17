@@ -1,4 +1,5 @@
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { registerLicense } from '@syncfusion/ej2-base';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
@@ -22,10 +23,17 @@ import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router';
 import { getVaccinationList, VaccinationInformation } from '../../../api/ApiVaccination';
 import { EventInformation, getUserEvents } from '../../../api/ApiEvent';
-import { Outlet } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
-export default function Dashboard() {
+import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Agenda, Inject } from '@syncfusion/ej2-react-schedule';
+
+var viewerStyle = {
+  'height': '700px',
+  'width': '100%'
+};
+
+export default function NurseDashboardContent() {
+  
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [vaccinationList, setVaccinationList] = useState<VaccinationInformation[]>([]);
@@ -48,11 +56,13 @@ export default function Dashboard() {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     getDoctors().then((res) => {
       setDoctorsList(res.data);
@@ -62,11 +72,13 @@ export default function Dashboard() {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     getVaccinationList().then((res) => {
       setVaccinationList(res.data);
@@ -76,11 +88,13 @@ export default function Dashboard() {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     
   },[]
@@ -111,6 +125,7 @@ export default function Dashboard() {
   maxDate.setMonth(nextMonth);
   maxDate.setFullYear(nextYear);
   locale('pl');
+  
 
   return (
       <Box sx={{ display: 'flex' }}>
@@ -129,7 +144,69 @@ export default function Dashboard() {
             overflow: 'auto',
           }}
         >
-            <Outlet />
+          {/* <div style={viewerStyle}>
+          <BoldReportViewerComponent
+          id="reportviewer-container"
+          reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
+          reportPath = {'~/Resources/docs/sales-order-detail.rdl'} >
+          </BoldReportViewerComponent>
+        </div> */}
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={5} lg={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: "6vh",
+                }}
+              >
+              <Typography align='center'>Dzisiejsze wizyty</Typography>
+              </Paper>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+              <List disablePadding>
+              {eventList.map((event) => (
+                  <ListItem disablePadding key={event.id}>
+                      <ListItemText>* {event.timeFrom}</ListItemText>
+                  </ListItem>
+                ))}
+              </List>
+              <br/>
+              <Button variant="contained"
+                onClick={() => {
+                  setOpenAddEditEventDialog(true);
+                }}>Zaplanuj wizytę</Button>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={8}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+              <div>
+              <ScheduleComponent>
+                <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+              </ScheduleComponent>
+              </div>
+              </Paper>
+            </Grid>
+            </Grid>
+            <Copyright sx={{ pt: 4 }} />
+          </Container>
         </Box>
         <Dialog
         open={openAddEditEventDialog}

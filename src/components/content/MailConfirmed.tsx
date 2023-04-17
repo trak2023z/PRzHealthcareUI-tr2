@@ -3,7 +3,7 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { confirmAccount } from '../../api/ApiAccount';
 import { useSnackbar } from 'notistack';
@@ -11,9 +11,11 @@ import { useSnackbar } from 'notistack';
 export default function MailConfirmed() {
     let navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
+    const [searchParams, setSearchParams] = useSearchParams();
+    searchParams.get("hashCode")
 
     useEffect(() => {
-        confirmAccount().then((res) => {
+        confirmAccount(searchParams.get("hashCode")).then((res) => {
         })
           .catch((error) => {
             enqueueSnackbar(error.response.data.message, {

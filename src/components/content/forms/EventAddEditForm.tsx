@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { EventInformation, getAvailableDays } from '../../../api/ApiEvent';
+import { EventInformation, getAvailableDays, patchEventTerm } from '../../../api/ApiEvent';
 import SaveAsIcon from '@mui/icons-material/SaveAs';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import BlockIcon from '@mui/icons-material/Block';
@@ -40,13 +40,13 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({ onClose, eventInfor
   const theme = createTheme();
   const { enqueueSnackbar } = useSnackbar();
 
-    yup.setLocale({
-      mixed: {
-          required: 'Pole obowiązkowe',
-      },
+yup.setLocale({
+    mixed: {
+        required: 'Pole obowiązkowe',
+    },
   });
 
-  useEffect(() => {
+useEffect(() => {
     
 }, []);
 
@@ -61,8 +61,8 @@ const handleDateChanged = (data: String) => {
     if(data != null)
     {
         setSelectedDate(data);
-        if(selectedDoctor != null && selectedDate != null){
-            getAvailableDays(selectedDate, selectedDoctor).then((res) => {
+        if(selectedDoctor != null && data != null){
+            getAvailableDays(data, selectedDoctor).then((res) => {
                 setAvailableDays(res.data);
                 console.log(res.data);
               })
@@ -90,6 +90,24 @@ const handleDateChanged = (data: String) => {
 
     const submitHandler: SubmitHandler<EventInformation> = (data: EventInformation) => {
         console.log(data);
+        patchEventTerm(data).then((res) => {
+            enqueueSnackbar("Wizyta została zarejestrowana. Informacja została wysłana na Twoją skrzynkę pocztową!", {
+                anchorOrigin: { vertical: "top", horizontal: "right" },
+                variant: "success",
+                autoHideDuration: 8000
+              });
+          })
+            .catch((error) => {
+              if (error.response.status === 401) {
+                localStorage.clear();
+                navigate('/login');
+              }
+              enqueueSnackbar(error.response.data.message, {
+                anchorOrigin: { vertical: "top", horizontal: "right" },
+                variant: "error",
+                autoHideDuration: 5000
+              });
+            });
     }
     
     const { control, handleSubmit, formState: { errors } } = useForm<EventInformation>({ resolver: yupResolver(addEventSchema)});
@@ -122,8 +140,10 @@ const handleDateChanged = (data: String) => {
                         error={!!errors.doctorId}
                         helperText={errors.doctorId ? errors.doctorId?.message : ''}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            field.onChange(event);
                             handleDoctorChanged(event.target.value);
-                          }}>
+                          }}
+                        >
                         {doctorsList.map((type) => (
                             <MenuItem key={type.id} value={type.id}>
                                 {type.firstname + ' ' + type.lastname}
@@ -146,9 +166,11 @@ const handleDateChanged = (data: String) => {
                         fullWidth
                         error={!!errors.dateFrom}
                         helperText={errors.dateFrom ? errors.dateFrom?.message : ''}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            field.onChange(event);
                             handleDateChanged(event.target.value);
-                          }}>
+                           }}
+                          >
                     </TextField>
                 )} />
             </section>
@@ -167,7 +189,7 @@ const handleDateChanged = (data: String) => {
                         error={!!errors.timeFrom}
                         helperText={errors.timeFrom ? errors.timeFrom?.message : ''}>
                         {availableDays.map((type) => (
-                            <MenuItem key={type.id} value={type.id}>
+                            <MenuItem key={type.timeFrom} value={type.timeFrom}>
                                 {getFormattedTime(new Date((type.timeFrom)))}
                             </MenuItem>
                         ))}

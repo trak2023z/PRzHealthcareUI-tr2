@@ -12,11 +12,10 @@ import { UseAuthenticatedUser } from '../../hooks/UseAuthenticatedUser';
 import { Link, Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { loginAccount, LoginData } from '../../api/ApiAccount';
+import { loginAccount, LoginData, resetPassword } from '../../api/ApiAccount';
 import { loginSchema } from '../../validators/accountValidator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
-import { postResetPasswordNotification } from '../../api/ApiNotification';
 import { SetStateAction, useState } from 'react';
 import prz_logo from '../../assets/prz_logo.png'
 
@@ -45,11 +44,13 @@ export default function SignIn() {
         navigate('/');
     })
       .catch((error) => {
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        if(error.response.data.message != null && error.response.data.message != ''){
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
   };
 
@@ -149,7 +150,8 @@ export default function SignIn() {
               </Grid>
               <Grid item md={12}>
                 <Button onClick={() => {
-                  postResetPasswordNotification({reminderEmail})
+                  console.log(reminderEmail)
+                  resetPassword(reminderEmail)
                   .then(() => {
                     enqueueSnackbar("Jeżeli adres jest w bazie danych, wiadomość zostanie wysłana.", {
                       anchorOrigin: { vertical: "bottom", horizontal: "left" },

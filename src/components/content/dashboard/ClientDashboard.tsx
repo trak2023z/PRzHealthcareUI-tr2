@@ -1,16 +1,11 @@
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Header from '../Header';
 import Copyright from '../Copyright';
 import { Button, Dialog, DialogContent, List, ListItem, ListItemText, Typography } from '@mui/material';
-import { Calendar } from 'primereact/calendar';
 import { useEffect, useState } from 'react';
 import { addLocale, locale } from 'primereact/api';
 import 'primeicons/primeicons.css';
@@ -22,13 +17,12 @@ import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router';
 import { getVaccinationList, VaccinationInformation } from '../../../api/ApiVaccination';
 import { EventInformation, getUserEvents } from '../../../api/ApiEvent';
-import userEvent from '@testing-library/user-event';
+import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Agenda, Inject, Resize, DragAndDrop } from '@syncfusion/ej2-react-schedule';
 
 export default function ClientDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [vaccinationList, setVaccinationList] = useState<VaccinationInformation[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | Date[] | undefined | null | string>(undefined);
   const [eventList, setEventList] = useState<EventInformation[]>([]);
 
   let navigate = useNavigate();
@@ -41,18 +35,19 @@ export default function ClientDashboardContent() {
   useEffect(() => {
     getUserEvents(Number(localStorage.getItem('accId'))).then((res) => {
       setEventList(res.data);
-      console.log(res.data);
     })
       .catch((error) => {
         if (error.response.status === 401) {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     getDoctors().then((res) => {
       setDoctorsList(res.data);
@@ -62,11 +57,13 @@ export default function ClientDashboardContent() {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     getVaccinationList().then((res) => {
       setVaccinationList(res.data);
@@ -76,11 +73,13 @@ export default function ClientDashboardContent() {
           localStorage.clear();
           navigate('/login');
         }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000
-        });
+        else{
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000
+          });
+        }
       });
     
   },[]
@@ -168,19 +167,20 @@ export default function ClientDashboardContent() {
               </Paper>
             </Grid>
             <Grid item xs={12} md={6} lg={8}>
-              <Paper
+              {/* <Paper
                 sx={{
                   p: 2,
                   display: 'flex',
                   flexDirection: 'column',
                 }}
-              >
-              <Calendar value={selectedDate} 
+              > */}
+              {/* <Calendar value={selectedDate} 
                 dateFormat="dd/mm/yyyy"
                 onChange={(e) => {
                   return setSelectedDate(e.value);
-                }} inline showWeek />
-              </Paper>
+                }} inline showWeek /> */}
+                <ScheduleComponent ></ScheduleComponent>
+              {/* </Paper> */}
             </Grid>
             </Grid>
             <Copyright sx={{ pt: 4 }} />
