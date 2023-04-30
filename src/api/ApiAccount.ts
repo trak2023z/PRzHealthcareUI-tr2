@@ -71,14 +71,10 @@ export const changePassword = (data: ChangePasswordData) => {
   });
 };
 export const resetPassword = (email: string) => {
-  return Api.put('/account/reset-password', {
-    email: email,
-  });
+  return Api.put('/account/reset-password?email='+email);
 };
-export const resetPasswordCheckHashCode = (data: string) => {
-  return Api.put('/account/reset-passwordcheck', data, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
+export const resetPasswordCheckHashCode = (hashCode: string) => {
+  return Api.put('/account/reset-passwordcheck?hashCode='+hashCode);
 };
 
 // export const getUserData = () => {

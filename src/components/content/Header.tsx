@@ -40,13 +40,13 @@ export default function Header() {
     };
 
     return (
-        <AppBar position="absolute">
+        <AppBar position="absolute" color='inherit'>
           <Toolbar
             sx={{
               pr: '24px',
             }}
           >
-            <Link to="/" style={{ textDecoration: 'none' }} ><img src="../../assets/prz_favicon.ico" width={50}/></Link>
+            <Link to="/"><img src="/prz_logo.png" alt="my image"/></Link>
             <Typography
               component="h1"
               variant="h5"
@@ -54,7 +54,6 @@ export default function Header() {
               noWrap
               sx={{ flexGrow: 1, fontFamily:'"Candara"'}}
             >
-              <Link to="/" style={{ textDecoration: 'none', color: 'white' }} > Klinika PRz Healthcare</Link>
             </Typography>
             <IconButton color="inherit">
               <IconButton color="inherit" sx={{ p: 1 }}

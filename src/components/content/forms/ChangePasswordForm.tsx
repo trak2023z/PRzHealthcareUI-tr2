@@ -51,7 +51,7 @@ const ChangePasswordForm: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: '20px' }}>
             <section>
                 <Controller name="oldPassword" control={control} render={({ field }) => (
-                    <TextField {...field} type="password" label="Aktualne hasło" fullWidth variant="outlined" error={!!errors.oldPassword}
+                    <TextField {...field} type="password" label="Aktualne hasło" variant="outlined" error={!!errors.oldPassword}
                         helperText={errors.oldPassword ? errors.oldPassword?.message : ''} />
                 )} />
             </section>
@@ -59,7 +59,7 @@ const ChangePasswordForm: React.FC = () => {
             </section>
             <section>
                 <Controller name="newPassword" control={control} render={({ field }) => (
-                    <TextField {...field} type="password" label="Nowe hasło" fullWidth variant="outlined" error={!!errors.newPassword}
+                    <TextField {...field} type="password" label="Nowe hasło" variant="outlined" error={!!errors.newPassword}
                         helperText={errors.newPassword ? errors.newPassword?.message : ''} />
                 )} />
             </section>
@@ -67,7 +67,7 @@ const ChangePasswordForm: React.FC = () => {
             </section>
             <section>
                 <Controller name="newPasswordRepeat" control={control} render={({ field }) => (
-                    <TextField {...field} type="password" label="Powtórz hasło" fullWidth variant="outlined" error={!!errors.newPasswordRepeat}
+                    <TextField {...field} type="password" label="Powtórz hasło" variant="outlined" error={!!errors.newPasswordRepeat}
                         helperText={errors.newPasswordRepeat ? errors.newPasswordRepeat?.message : ''} />
                 )} />
             </section>
