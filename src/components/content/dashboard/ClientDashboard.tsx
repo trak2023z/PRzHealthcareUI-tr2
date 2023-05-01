@@ -28,19 +28,26 @@ import {
   VaccinationInformation,
 } from "../../../api/ApiVaccination";
 import { EventInformation, getUserEvents } from "../../../api/ApiEvent";
-import {
-  ScheduleComponent,
-  ViewsDirective,
-  ViewDirective,
-  Day,
-  Week,
-  WorkWeek,
-  Month,
-  Agenda,
-  Inject,
-  Resize,
-  DragAndDrop,
-} from "@syncfusion/ej2-react-schedule";
+import "../../../App.css";
+import { DataManager, ODataV4Adaptor, Query } from "@syncfusion/ej2-data";
+
+//Report designer source
+import "@boldreports/javascript-reporting-controls/Scripts/bold.report-viewer.min";
+import "@boldreports/javascript-reporting-controls/Content/material/bold.reports.all.min.css";
+//Data-Visualization
+import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.bulletgraph.min";
+import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.chart.min";
+//Reports react base
+import "@boldreports/react-reporting-components/Scripts/bold.reports.react.min";
+import { Agenda, Day, Inject, Month, ScheduleComponent, ViewDirective, ViewsDirective, Week, WorkWeek } from "@syncfusion/ej2-react-schedule";
+
+declare let BoldReportViewerComponent: any;
+
+var viewerStyle = {
+  height: "700px",
+  width: "100%",
+};
+
 
 export default function ClientDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
@@ -185,6 +192,11 @@ export default function ClientDashboardContent() {
           overflow: "auto",
         }}
       >
+        {/* <BoldReportViewerComponent
+     id="reportviewer-container"
+     reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
+     reportPath = {'../../../assets/resources/ZaswiadczenieCOVID.rdl'} >
+     </BoldReportViewerComponent> */}
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -192,7 +204,7 @@ export default function ClientDashboardContent() {
                 sx={{ p: 2, display: "flex", flexDirection: "column" }}
               ></Paper>
             </Grid>
-            <Grid item xs={12} md={5} lg={4}>
+            <Grid item xs={12}>
               <Paper
                 sx={{
                   p: 2,
@@ -201,7 +213,7 @@ export default function ClientDashboardContent() {
                   height: "6vh",
                 }}
               >
-                <Typography align="center">Twoje zaplanowane wizyty</Typography>
+                <Typography align="center">Twoje wizyty</Typography>
               </Paper>
               <Paper
                 sx={{
@@ -228,21 +240,40 @@ export default function ClientDashboardContent() {
                 </Button>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={6} lg={8}>
-              {/* <Paper
+            <Grid item xs={12}>
+              <Paper
                 sx={{
                   p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-              > */}
-              {/* <Calendar value={selectedDate} 
-                dateFormat="dd/mm/yyyy"
-                onChange={(e) => {
-                  return setSelectedDate(e.value);
-                }} inline showWeek /> */}
-              <ScheduleComponent></ScheduleComponent>
-              {/* </Paper> */}
+              >
+                {eventList == undefined ? (
+                  <div>Loading</div>
+                ) : (
+                  <div>
+                    <ScheduleComponent
+                      height="550px"
+                      selectedDate={new Date()}
+                    >
+                      <ViewsDirective>
+                        <ViewDirective
+                          option="WorkWeek"
+                          startHour="8:00"
+                          endHour="16:00"
+                        />
+                        <ViewDirective
+                          option="Week"
+                          startHour="08:00"
+                          endHour="16:00"
+                        />
+                        <ViewDirective option="Month" showWeekend={false} />
+                      </ViewsDirective>
+                      <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+                    </ScheduleComponent>
+                  </div>
+                )}
+              </Paper>
             </Grid>
           </Grid>
           <Copyright sx={{ pt: 4 }} />

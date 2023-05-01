@@ -38,7 +38,7 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({ onClose, eventInfor
   const [selectedDoctor, setSelectedDoctor] = useState<String>();
   let navigate = useNavigate();
   const theme = createTheme();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
 yup.setLocale({
     mixed: {
@@ -94,7 +94,11 @@ const handleDateChanged = (data: String) => {
             enqueueSnackbar("Wizyta została zarejestrowana. Informacja została wysłana na Twoją skrzynkę pocztową!", {
                 anchorOrigin: { vertical: "top", horizontal: "right" },
                 variant: "success",
-                autoHideDuration: 8000
+                autoHideDuration: 8000,
+                onClick: () => {
+                  closeSnackbar();
+                  onClose();
+                },
               });
           })
             .catch((error) => {

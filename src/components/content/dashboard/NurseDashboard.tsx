@@ -1,4 +1,3 @@
-import { registerLicense } from "@syncfusion/ej2-base";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -30,25 +29,25 @@ import {
 } from "../../../api/ApiVaccination";
 import { EventInformation, getUserEvents } from "../../../api/ApiEvent";
 import "../../../App.css";
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query } from "@syncfusion/ej2-data";
 
-import {
-  ScheduleComponent,
-  ViewsDirective,
-  ViewDirective,
-  Day,
-  Week,
-  WorkWeek,
-  Month,
-  Agenda,
-  Inject,
-  EventSettingsModel,
-} from "@syncfusion/ej2-react-schedule";
+//Report designer source
+import "@boldreports/javascript-reporting-controls/Scripts/bold.report-viewer.min";
+import "@boldreports/javascript-reporting-controls/Content/material/bold.reports.all.min.css";
+//Data-Visualization
+import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.bulletgraph.min";
+import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.chart.min";
+//Reports react base
+import "@boldreports/react-reporting-components/Scripts/bold.reports.react.min";
+import { Agenda, Day, Inject, Month, ScheduleComponent, ViewDirective, ViewsDirective, Week, WorkWeek } from "@syncfusion/ej2-react-schedule";
+
+declare let BoldReportViewerComponent: any;
 
 var viewerStyle = {
   height: "700px",
   width: "100%",
 };
+
 
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
@@ -56,9 +55,6 @@ export default function NurseDashboardContent() {
   const [vaccinationList, setVaccinationList] = useState<
     VaccinationInformation[]
   >([]);
-  const [selectedDate, setSelectedDate] = useState<
-    Date | Date[] | undefined | null | string
-  >(undefined);
   const [eventList, setEventList] = useState<EventInformation[]>([]);
 
   let navigate = useNavigate();
@@ -67,52 +63,6 @@ export default function NurseDashboardContent() {
   const handleCloseAddEditEventDialog = () => {
     setOpenAddEditEventDialog(false);
   };
-
-  const data: object[] = [
-    {
-      Id: 2,
-      Subject: "Meeting",
-      StartTime: new Date(2023, 5, 2, 10, 0),
-      EndTime: new Date(2023, 5, 2, 10, 15),
-      IsAllDay: false,
-      Status: "Completed",
-      Priority: "High",
-    },
-  ];
-  const fieldsData = {
-    id: "Id",
-    subject: { name: "Subject" },
-    isAllDay: { name: "IsAllDay" },
-    startTime: { name: "StartTime" },
-    endTime: { name: "EndTime" },
-  };
-  const eventSettings: EventSettingsModel = { dataSource: eventList };
-
-  function onDataBinding(e: { [key: string]: Object }): void {
-    let items: { [key: string]: Object }[] = (e.result as { [key: string]: Object }).items as { [key: string]: Object }[];
-    let scheduleData: Object[] = [];
-    if (items.length > 0) {
-      for (let i: number = 0; i < items.length; i++) {
-        let event: { [key: string]: Object } = items[i];
-        let when: string = (event.start as { [key: string]: Object }).dateTime as string;
-        let start: string = (event.start as { [key: string]: Object }).dateTime as string;
-        let end: string = (event.end as { [key: string]: Object }).dateTime as string;
-        if (!when) {
-          when = (event.start as { [key: string]: Object }).date as string;
-          start = (event.start as { [key: string]: Object }).date as string;
-          end = (event.end as { [key: string]: Object }).date as string;
-        }
-        scheduleData.push({
-          Id: event.id,
-          Subject: event.summary,
-          StartTime: new Date(start),
-          EndTime: new Date(end),
-          IsAllDay: !(event.start as { [key: string]: Object }).dateTime
-        });
-      }
-    }
-    e.result = scheduleData;
-  }
 
   useEffect(() => {
     getUserEvents(Number(localStorage.getItem("accId")))
@@ -242,13 +192,11 @@ export default function NurseDashboardContent() {
           overflow: "auto",
         }}
       >
-        {/* <div style={viewerStyle}>
-          <BoldReportViewerComponent
-          id="reportviewer-container"
-          reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
-          reportPath = {'~/Resources/docs/sales-order-detail.rdl'} >
-          </BoldReportViewerComponent>
-        </div> */}
+        {/* <BoldReportViewerComponent
+     id="reportviewer-container"
+     reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
+     reportPath = {'../../../assets/resources/ZaswiadczenieCOVID.rdl'} >
+     </BoldReportViewerComponent> */}
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -300,31 +248,31 @@ export default function NurseDashboardContent() {
                   flexDirection: "column",
                 }}
               >
-                {eventList == undefined ? (<div>Loading</div>) : (
-                <div>
-                  <ScheduleComponent
-                    height="550px"
-                    selectedDate={new Date()}
-                    eventSettings={eventSettings}
-                    dataBinding={onDataBinding}
-                  >
-                    <ViewsDirective>
-                      <ViewDirective
-                        option="WorkWeek"
-                        startHour="8:00"
-                        endHour="16:00"
-                      />
-                      <ViewDirective
-                        option="Week"
-                        startHour="08:00"
-                        endHour="16:00"
-                      />
-                      <ViewDirective option="Month" showWeekend={false} />
-                    </ViewsDirective>
-                    <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
-                  </ScheduleComponent>
-                </div>
-)}
+                {eventList == undefined ? (
+                  <div>Loading</div>
+                ) : (
+                  <div>
+                    <ScheduleComponent
+                      height="550px"
+                      selectedDate={new Date()}
+                    >
+                      <ViewsDirective>
+                        <ViewDirective
+                          option="WorkWeek"
+                          startHour="8:00"
+                          endHour="16:00"
+                        />
+                        <ViewDirective
+                          option="Week"
+                          startHour="08:00"
+                          endHour="16:00"
+                        />
+                        <ViewDirective option="Month" showWeekend={false} />
+                      </ViewsDirective>
+                      <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+                    </ScheduleComponent>
+                  </div>
+                )}
               </Paper>
             </Grid>
           </Grid>
