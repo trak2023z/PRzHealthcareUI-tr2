@@ -191,6 +191,8 @@ export default function Dashboard() {
             onClose={handleCloseAddEditEventDialog}
             doctorsList={doctorsList}
             vaccinationsList={vaccinationList}
+            startDate={undefined}
+            startTime={undefined}
           />
         </DialogContent>
       </Dialog>

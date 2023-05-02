@@ -43,10 +43,14 @@ export type ChangePasswordData = {
   newPassword: string;
   newPasswordRepeat: string;
 };
+// export type ResetPasswordData = {
+//   email: string
+// }
 export type ResetPasswordData = {
-  email: string
+  hashCode: string;
+  newPassword: string;
+  newPasswordRepeat: string;
 }
-
 export const loginAccount = (data: LoginData) => {
   return Api.post('/account/login', data);
 };
@@ -70,10 +74,15 @@ export const changePassword = (data: ChangePasswordData) => {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 };
-export const resetPassword = (email: string) => {
-  return Api.put('/account/reset-password?email='+email);
+export const resetPassword = (data: ResetPasswordData) => {
+  return Api.put('/account/reset-password', data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
 };
-export const resetPasswordCheckHashCode = (hashCode: string) => {
+export const resetPasswordReqeust = (email: string) => {
+  return Api.put('/account/reset-password-request?email='+email);
+};
+export const resetPasswordCheckHashCode = (hashCode: string | null) => {
   return Api.put('/account/reset-passwordcheck?hashCode='+hashCode);
 };
 

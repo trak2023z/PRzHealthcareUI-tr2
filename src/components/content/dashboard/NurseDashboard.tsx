@@ -12,6 +12,10 @@ import {
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -27,7 +31,7 @@ import {
   getVaccinationList,
   VaccinationInformation,
 } from "../../../api/ApiVaccination";
-import { EventInformation, getUserEvents } from "../../../api/ApiEvent";
+import { EventInformation, getNurseEvents } from "../../../api/ApiEvent";
 import "../../../App.css";
 import { DataManager, ODataV4Adaptor, Query } from "@syncfusion/ej2-data";
 
@@ -39,7 +43,18 @@ import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej
 import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.chart.min";
 //Reports react base
 import "@boldreports/react-reporting-components/Scripts/bold.reports.react.min";
-import { Agenda, Day, Inject, Month, ScheduleComponent, ViewDirective, ViewsDirective, Week, WorkWeek } from "@syncfusion/ej2-react-schedule";
+import {
+  Agenda,
+  Day,
+  Inject,
+  Month,
+  PopupOpenEventArgs,
+  ScheduleComponent,
+  ViewDirective,
+  ViewsDirective,
+  Week,
+  WorkWeek,
+} from "@syncfusion/ej2-react-schedule";
 
 declare let BoldReportViewerComponent: any;
 
@@ -48,14 +63,19 @@ var viewerStyle = {
   width: "100%",
 };
 
-
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
+  const [selectedDoctor, setSelectedDoctor] = useState<UserData>();
   const [vaccinationList, setVaccinationList] = useState<
     VaccinationInformation[]
   >([]);
   const [eventList, setEventList] = useState<EventInformation[]>([]);
+  const [doctorEventList, setDoctorEventList] = useState<EventInformation[]>(
+    []
+  );
+  const [startDate, setStartDate] = useState<Date>();
+  const [startTime, setStartTime] = useState<String>();
 
   let navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -65,7 +85,7 @@ export default function NurseDashboardContent() {
   };
 
   useEffect(() => {
-    getUserEvents(Number(localStorage.getItem("accId")))
+    getNurseEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
         setEventList(res.data);
       })
@@ -114,6 +134,43 @@ export default function NurseDashboardContent() {
         }
       });
   }, []);
+
+  function onPopupOpen(args: PopupOpenEventArgs): void {
+    const hours = new Date(
+      args.data?.startTime ? args.data?.startTime?.toString() : new Date()
+    )
+      .getHours()
+      .toString()
+      .padStart(2, "0");
+    const minutes = new Date(
+      args.data?.startTime ? args.data?.startTime?.toString() : new Date()
+    )
+      .getMinutes()
+      .toString()
+      .padStart(2, "0");
+    const time = `${hours}:${minutes}`;
+
+    setStartDate(
+      new Date(args.data ? args.data.toString() : new Date().getDate())
+    );
+    setStartTime(time);
+    args.cancel = true;
+    setOpenAddEditEventDialog(true);
+  }
+  function onExportProgressChanged(event: any) {
+    if (event.stage === "beginExport") {
+        console.log(event.stage);
+    }
+    else if (event.stage === "exportStarted") {
+        console.log(event.stage);
+    }
+    else if (event.stage === "preparation") {
+        console.log(event.stage);
+        console.log(event.format);
+        console.log(event.preparationStage);
+    }
+    event.handled = true;
+}
 
   addLocale("pl", {
     firstDayOfWeek: 1,
@@ -175,6 +232,19 @@ export default function NurseDashboardContent() {
   maxDate.setFullYear(nextYear);
   locale("pl");
 
+  var parameters = [
+    {
+      name: "EventId",
+      values: [7195],
+      labels: ["7195"],
+      nullable: false,
+      dateTimeInfo: {},
+    },
+  ];
+  var parameterSettings = {
+    hideParameterBlock: true,
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -192,17 +262,53 @@ export default function NurseDashboardContent() {
           overflow: "auto",
         }}
       >
-        {/* <BoldReportViewerComponent
-     id="reportviewer-container"
-     reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
-     reportPath = {'../../../assets/resources/ZaswiadczenieCOVID.rdl'} >
-     </BoldReportViewerComponent> */}
+        <BoldReportViewerComponent
+          id="reportviewer-container"
+          reportServiceUrl={
+            "http://192.168.56.1:5000/api/ReportViewer"}
+          reportPath={"ZaswiadczenieCOVID"}
+          parameterSettings={parameterSettings}
+          parameters={parameters}
+          exportProgressChanged = {onExportProgressChanged}
+        ></BoldReportViewerComponent>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Paper
                 sx={{ p: 2, display: "flex", flexDirection: "column" }}
               ></Paper>
+            </Grid>
+            <Grid item xs={12}>
+              {doctorsList.length === 0 ? (
+                <div>Loading...</div>
+              ) : (
+                <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
+                  <TextField
+                    label="Doktor"
+                    select
+                    fullWidth
+                    style={{ textAlign: "left" }}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      setSelectedDoctor(
+                        doctorsList.filter(
+                          (doc) => doc.id === Number(event.target.value)
+                        )[0]
+                      );
+                      setDoctorEventList(
+                        eventList.filter(
+                          (ev) => ev.doctorId === Number(event.target.value)
+                        )
+                      );
+                    }}
+                  >
+                    {doctorsList.map((type) => (
+                      <MenuItem key={type.id} value={type.id}>
+                        {type.firstname + " " + type.lastname}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Paper>
+              )}
             </Grid>
             <Grid item xs={12} md={5} lg={4}>
               <Paper
@@ -213,7 +319,7 @@ export default function NurseDashboardContent() {
                   height: "6vh",
                 }}
               >
-                <Typography align="center">Dzisiejsze wizyty</Typography>
+                <Typography align="center">Wizyty</Typography>
               </Paper>
               <Paper
                 sx={{
@@ -223,11 +329,13 @@ export default function NurseDashboardContent() {
                 }}
               >
                 <List disablePadding>
-                  {eventList.map((event) => (
-                    <ListItem disablePadding key={event.id}>
-                      <ListItemText>* {event.timeFrom}</ListItemText>
-                    </ListItem>
-                  ))}
+                  {eventList
+                    .filter((ev) => ev.doctorId === selectedDoctor?.id)
+                    .map((event) => (
+                      <ListItem disablePadding key={event.id}>
+                        <ListItemText>* {event.timeFrom}</ListItemText>
+                      </ListItem>
+                    ))}
                 </List>
                 <br />
                 <Button
@@ -248,13 +356,15 @@ export default function NurseDashboardContent() {
                   flexDirection: "column",
                 }}
               >
-                {eventList == undefined ? (
+                {eventList === undefined ? (
                   <div>Loading</div>
                 ) : (
                   <div>
                     <ScheduleComponent
                       height="550px"
                       selectedDate={new Date()}
+                      popupOpen={onPopupOpen}
+                      timeScale={{ enable: true, interval: 15, slotCount: 1 }}
                     >
                       <ViewsDirective>
                         <ViewDirective
@@ -262,14 +372,9 @@ export default function NurseDashboardContent() {
                           startHour="8:00"
                           endHour="16:00"
                         />
-                        <ViewDirective
-                          option="Week"
-                          startHour="08:00"
-                          endHour="16:00"
-                        />
-                        <ViewDirective option="Month" showWeekend={false} />
+                        <ViewDirective option="Day" showWeekend={false} />
                       </ViewsDirective>
-                      <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+                      <Inject services={[Day, WorkWeek, Month, Agenda]} />
                     </ScheduleComponent>
                   </div>
                 )}
@@ -279,19 +384,24 @@ export default function NurseDashboardContent() {
           <Copyright sx={{ pt: 4 }} />
         </Container>
       </Box>
-      <Dialog
-        open={openAddEditEventDialog}
-        onClose={handleCloseAddEditEventDialog}
-        fullScreen
-      >
-        <DialogContent>
-          <EventAddEditForm
-            onClose={handleCloseAddEditEventDialog}
-            doctorsList={doctorsList}
-            vaccinationsList={vaccinationList}
-          />
-        </DialogContent>
-      </Dialog>
+      {startDate === null || startDate === undefined ? (
+        <div>Loading</div>
+      ) : (
+        <Dialog
+          open={openAddEditEventDialog}
+          onClose={handleCloseAddEditEventDialog}
+        >
+          <DialogContent>
+            <EventAddEditForm
+              onClose={handleCloseAddEditEventDialog}
+              doctorsList={doctorsList}
+              vaccinationsList={vaccinationList}
+              startDate={startDate ? startDate : undefined}
+              startTime={startTime ? startTime : undefined}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </Box>
   );
 }

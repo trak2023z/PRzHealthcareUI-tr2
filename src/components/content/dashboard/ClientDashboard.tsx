@@ -289,6 +289,8 @@ export default function ClientDashboardContent() {
             onClose={handleCloseAddEditEventDialog}
             doctorsList={doctorsList}
             vaccinationsList={vaccinationList}
+            startDate={undefined}
+            startTime={undefined}
           />
         </DialogContent>
       </Dialog>
