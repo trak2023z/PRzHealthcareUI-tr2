@@ -34,8 +34,6 @@ import {
 } from "../../../api/ApiVaccination";
 import { EventInformation, getNurseEvents } from "../../../api/ApiEvent";
 import "../../../App.css";
-import { DataManager, ODataV4Adaptor, Query } from "@syncfusion/ej2-data";
-import { extend } from '@syncfusion/ej2-base';
 
 import "@boldreports/javascript-reporting-controls/Scripts/bold.report-viewer.min";
 import "@boldreports/javascript-reporting-controls/Content/material/bold.reports.all.min.css";
@@ -56,13 +54,6 @@ import {
   WorkWeek,
 } from "@syncfusion/ej2-react-schedule";
 
-declare let BoldReportViewerComponent: any;
-
-var viewerStyle = {
-  height: "700px",
-  width: "100%",
-};
-
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
@@ -79,7 +70,7 @@ export default function NurseDashboardContent() {
   const [startTime, setStartTime] = useState<String>();
 
   let navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const handleCloseAddEditEventDialog = () => {
     setOpenAddEditEventDialog(false);
@@ -103,6 +94,9 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         }
       });
@@ -120,6 +114,9 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         }
       });
@@ -137,6 +134,9 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         }
       });
@@ -154,6 +154,9 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         }
       });
@@ -180,18 +183,6 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
     setStartTime(time);
     args.cancel = true;
     setOpenAddEditEventDialog(true);
-  }
-  function onExportProgressChanged(event: any) {
-    if (event.stage === "beginExport") {
-      console.log(event.stage);
-    } else if (event.stage === "exportStarted") {
-      console.log(event.stage);
-    } else if (event.stage === "preparation") {
-      console.log(event.stage);
-      console.log(event.format);
-      console.log(event.preparationStage);
-    }
-    event.handled = true;
   }
 
   addLocale("pl", {
@@ -254,19 +245,6 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
   maxDate.setFullYear(nextYear);
   locale("pl");
 
-  var parameters = [
-    {
-      name: "EventId",
-      values: [7195],
-      labels: ["7195"],
-      nullable: false,
-      dateTimeInfo: {},
-    },
-  ];
-  var parameterSettings = {
-    hideParameterBlock: true,
-  };
-
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -284,15 +262,6 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
           overflow: "auto",
         }}
       >
-        {/* <BoldReportViewerComponent
-          id="reportviewer-container"
-          reportServiceUrl={
-            "http://192.168.56.1:5000/api/ReportViewer"}
-          reportPath={"ZaswiadczenieCOVID"}
-          parameterSettings={parameterSettings}
-          parameters={parameters}
-          exportProgressChanged = {onExportProgressChanged}
-        ></BoldReportViewerComponent> */}
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -422,7 +391,7 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
               onClose={handleCloseAddEditEventDialog}
               doctorsList={doctorsList}
               patientsList={patientsList}
-              vaccinationsList={vaccinationList}
+              vaccinationsList={vaccinationList.filter((vac) => vac.isActive)}
               startDate={startDate ? startDate : undefined}
               startTime={startTime ? startTime : undefined}
               isPatient={false}

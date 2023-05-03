@@ -17,6 +17,7 @@ import NurseDashboardContent from "./components/content/dashboard/NurseDashboard
 import { useState } from "react";
 import { registerLicense } from '@syncfusion/ej2-base';
 import PasswordRestart from "./components/content/PasswordRestart";
+import GlobalSettings from "./components/content/GlobalSettings";
 
 function App() {
   const [admin, setAdmin] = useState(localStorage.getItem("login")==="Administrator"? true : false);
@@ -35,6 +36,7 @@ function App() {
               >
                 <Route path="/" element={admin ? <NurseDashboardContent /> : <ClientDashboardContent />} />
                 <Route path="/usersettings" element={<UserProfileSettings />} />
+                <Route path="/globalsettings" element={<GlobalSettings />} />
                 </Route>
 
               <Route path="/login" element={<SignIn />} />

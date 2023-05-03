@@ -20,9 +20,10 @@ import PostAddIcon from "@mui/icons-material/PostAdd";
 import BlockIcon from "@mui/icons-material/Block";
 import { UserData } from "../../../api/ApiAccount";
 import { VaccinationInformation } from "../../../api/ApiVaccination";
-import { Container, MenuItem, Paper } from "@mui/material";
+import { Container, IconButton, MenuItem, Paper, Tooltip } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PrintIcon from "@mui/icons-material/Print";
+import InfoIcon from "@mui/icons-material/Info";
 import { printCOVIDCertificate } from "../../../api/ApiCertificate";
 import { event } from "jquery";
 
@@ -62,6 +63,8 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
   const [availableDays, setAvailableDays] = useState<EventInformation[]>([]);
   const [selectedDate, setSelectedDate] = useState<String>();
   const [selectedDoctor, setSelectedDoctor] = useState<String>();
+  const [selectedVaccination, setSelectedVaccination] =
+    useState<VaccinationInformation>();
   let navigate = useNavigate();
   const theme = createTheme();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -80,6 +83,13 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
       setSelectedDoctor(data);
     }
   };
+  const handleVaccinationChanged = (data: String) => {
+    if (data != null) {
+      setSelectedVaccination(
+        vaccinationsList.filter((vac) => vac.id == Number(data))[0]
+      );
+    }
+  };
   const handleFinishTerm = (data: EventInformation | undefined) => {
     if (data != undefined) {
       finishEventTerm(data)
@@ -89,6 +99,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         })
         .catch((error) => {
@@ -101,6 +114,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         });
     }
@@ -114,6 +130,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         })
         .catch((error) => {
@@ -126,6 +145,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
           });
         });
     }
@@ -134,20 +156,25 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
     printCOVIDCertificate(data)
       .then((res) => {
         //if(data != undefined){
-          console.log(res.data);
-          const date = new Date()
+        console.log(res.data);
+        const date = new Date();
         const url: string = window.URL.createObjectURL(new Blob([res.data]));
-        const a: HTMLAnchorElement = document.createElement('a');
+        const a: HTMLAnchorElement = document.createElement("a");
         a.href = url;
-        a.download = String(1234) + date.getFullYear() + date.getMonth() + date.getDay() + '.pdf';
+        a.download =
+          String(1234) +
+          date.getFullYear() +
+          date.getMonth() +
+          date.getDay() +
+          ".pdf";
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
           document.body.removeChild(a);
           window.URL.revokeObjectURL(url);
-        })
-      //  }
-       })
+        });
+        //  }
+      })
       .catch((error) => {
         if (error.response.status === 401) {
           localStorage.clear();
@@ -158,6 +185,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
           preventDuplicate: true,
           variant: "error",
           autoHideDuration: 5000,
+          onClick: () => {
+            closeSnackbar();
+          },
         });
       });
   };
@@ -168,6 +198,7 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
       if (selectedDoctor != null && data != null) {
         getAvailableDays(data, selectedDoctor)
           .then((res) => {
+            console.log(res.data);
             setAvailableDays(res.data);
           })
           .catch((error) => {
@@ -180,6 +211,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
               preventDuplicate: true,
               variant: "error",
               autoHideDuration: 5000,
+              onClick: () => {
+                closeSnackbar();
+              },
             });
           });
       }
@@ -212,7 +246,6 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             autoHideDuration: 8000,
             onClick: () => {
               closeSnackbar();
-              onClose();
             },
           }
         );
@@ -226,6 +259,9 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
           anchorOrigin: { vertical: "top", horizontal: "right" },
           variant: "error",
           autoHideDuration: 5000,
+          onClick: () => {
+            closeSnackbar();
+          },
         });
       });
   };
@@ -266,26 +302,41 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
               )}
             />
           )}
-          <Controller
-            name="vacId"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                select
-                label="Szczepionka"
-                {...field}
-                fullWidth
-                error={!!errors.vacId}
-                helperText={errors.vacId ? errors.vacId?.message : ""}
-              >
-                {vaccinationsList.map((type) => (
-                  <MenuItem key={type.id} value={type.id}>
-                    {type.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+          <Stack direction={"row"}>
+            <Controller
+              name="vacId"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  select
+                  label="Szczepionka"
+                  {...field}
+                  fullWidth
+                  error={!!errors.vacId}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(event);
+                    handleVaccinationChanged(event.target.value);
+                  }}
+                  helperText={errors.vacId ? errors.vacId?.message : ""}
+                >
+                  {vaccinationsList.map((type) => (
+                    <MenuItem key={type.id} value={type.id}>
+                      {type.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+            <Tooltip
+              title={selectedVaccination?.description}
+              sx={{ fontSize: "13" }}
+            >
+              <IconButton>
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+
           <Controller
             name="doctorId"
             control={control}
@@ -372,7 +423,6 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             )}
           />
           {!isEdit && (
-            
             <Stack direction={"column"} spacing={2}>
               <Button
                 onClick={() => {
