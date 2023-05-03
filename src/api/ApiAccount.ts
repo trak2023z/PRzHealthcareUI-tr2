@@ -69,6 +69,11 @@ export const getDoctors = () => {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 }
+export const getPatients = () => {
+  return Api.get('/account/getpatientslist', {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+}
 export const changePassword = (data: ChangePasswordData) => {
   return Api.put('/account/changepassword', data, {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

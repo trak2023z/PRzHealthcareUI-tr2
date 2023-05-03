@@ -45,8 +45,18 @@ export const getAvailableDays = (
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });
 };
-export const patchEventTerm = (data: EventInformation) => {
+export const takeEventTerm = (data: EventInformation) => {
   return Api.patch("/event/takeeventterm", data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+};
+export const finishEventTerm = (data: EventInformation) => {
+  return Api.patch("/event/finishterm", data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+};
+export const cancelEventTerm = (data: EventInformation) => {
+  return Api.patch("/event/cancelterm", data, {
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });
 };

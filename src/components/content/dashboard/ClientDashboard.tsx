@@ -288,9 +288,11 @@ export default function ClientDashboardContent() {
           <EventAddEditForm
             onClose={handleCloseAddEditEventDialog}
             doctorsList={doctorsList}
+            patientsList={undefined}
             vaccinationsList={vaccinationList}
             startDate={undefined}
             startTime={undefined}
+            isPatient={true}
           />
         </DialogContent>
       </Dialog>

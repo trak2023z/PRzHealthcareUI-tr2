@@ -10,8 +10,10 @@ import { useSnackbar } from "notistack";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   EventInformation,
+  cancelEventTerm,
+  finishEventTerm,
   getAvailableDays,
-  patchEventTerm,
+  takeEventTerm,
 } from "../../../api/ApiEvent";
 import SaveAsIcon from "@mui/icons-material/SaveAs";
 import PostAddIcon from "@mui/icons-material/PostAdd";
@@ -19,14 +21,20 @@ import BlockIcon from "@mui/icons-material/Block";
 import { UserData } from "../../../api/ApiAccount";
 import { VaccinationInformation } from "../../../api/ApiVaccination";
 import { Container, MenuItem, Paper } from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import PrintIcon from "@mui/icons-material/Print";
+import { printCOVIDCertificate } from "../../../api/ApiCertificate";
+import { event } from "jquery";
 
 interface EventAddEditFormProps {
   onClose: () => void;
-  eventInformation?: EventInformation;
+  eventInformation?: EventInformation | undefined;
   doctorsList: UserData[];
+  patientsList: UserData[] | undefined;
   vaccinationsList: VaccinationInformation[];
   startDate: Date | undefined;
   startTime: String | undefined;
+  isPatient: Boolean;
 }
 
 const addEventSchema = yup.object().shape({
@@ -40,9 +48,11 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
   onClose,
   eventInformation,
   doctorsList,
+  patientsList,
   vaccinationsList,
   startDate,
-  startTime
+  startTime,
+  isPatient,
 }) => {
   const isEdit = !!eventInformation;
 
@@ -70,6 +80,87 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
       setSelectedDoctor(data);
     }
   };
+  const handleFinishTerm = (data: EventInformation | undefined) => {
+    if (data != undefined) {
+      finishEventTerm(data)
+        .then((res) => {
+          enqueueSnackbar("Wizyta została zakończona", {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+          });
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
+          }
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+          });
+        });
+    }
+  };
+  const handleCancelTerm = (data: EventInformation | undefined) => {
+    if (data != undefined) {
+      cancelEventTerm(data)
+        .then((res) => {
+          enqueueSnackbar("Wizyta została odwołana", {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+          });
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
+          }
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+          });
+        });
+    }
+  };
+  const handlePrintCertificate = (data: EventInformation | undefined) => {
+    printCOVIDCertificate(data)
+      .then((res) => {
+        //if(data != undefined){
+          console.log(res.data);
+          const date = new Date()
+        const url: string = window.URL.createObjectURL(new Blob([res.data]));
+        const a: HTMLAnchorElement = document.createElement('a');
+        a.href = url;
+        a.download = String(1234) + date.getFullYear() + date.getMonth() + date.getDay() + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        })
+      //  }
+       })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        }
+        enqueueSnackbar(error.response.data.message, {
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+          preventDuplicate: true,
+          variant: "error",
+          autoHideDuration: 5000,
+        });
+      });
+  };
 
   const handleDateChanged = (data: String) => {
     if (data != null) {
@@ -86,6 +177,7 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
             }
             enqueueSnackbar(error.response.data.message, {
               anchorOrigin: { vertical: "top", horizontal: "right" },
+              preventDuplicate: true,
               variant: "error",
               autoHideDuration: 5000,
             });
@@ -108,10 +200,12 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
   const submitHandler: SubmitHandler<EventInformation> = (
     data: EventInformation
   ) => {
-    patchEventTerm(data)
-      .then((res) => {
+    takeEventTerm(data)
+      .then((res: any) => {
         enqueueSnackbar(
-          "Wizyta została zarejestrowana. Informacja została wysłana na Twoją skrzynkę pocztową!",
+          isPatient
+            ? "Wizyta została zarejestrowana. Informacja została wysłana na Twoją skrzynkę pocztową!"
+            : "Wizyta została zarejestrowana. Informacja została wysłana na skrzynkę pocztową pacjenta!",
           {
             anchorOrigin: { vertical: "top", horizontal: "right" },
             variant: "success",
@@ -123,7 +217,7 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
           }
         );
       })
-      .catch((error) => {
+      .catch((error: any) => {
         if (error.response.status === 401) {
           localStorage.clear();
           navigate("/login");
@@ -143,46 +237,27 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
   } = useForm<EventInformation>({ resolver: yupResolver(addEventSchema) });
   return (
     <Container maxWidth="sm">
-        <form onSubmit={handleSubmit(submitHandler)}>
-          <br />
-          <Stack spacing={2} direction={"column"}>
+      <form onSubmit={handleSubmit(submitHandler)}>
+        <br />
+        <Stack spacing={2} direction={"column"}>
+          {!isPatient && (
             <Controller
-              name="vacId"
+              name="accId"
               control={control}
               render={({ field }) => (
                 <TextField
                   select
-                  label="Szczepionka"
+                  label="Pacjent"
                   {...field}
                   fullWidth
-                  error={!!errors.vacId}
-                  helperText={errors.vacId ? errors.vacId?.message : ""}
-                >
-                  {vaccinationsList.map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
-                      {type.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-            <Controller
-              name="doctorId"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  select
-                  label="Doktor"
-                  {...field}
-                  fullWidth
-                  error={!!errors.doctorId}
-                  helperText={errors.doctorId ? errors.doctorId?.message : ""}
+                  error={!!errors.accId}
+                  helperText={errors.accId ? errors.accId?.message : ""}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     field.onChange(event);
                     handleDoctorChanged(event.target.value);
                   }}
                 >
-                  {doctorsList.map((type) => (
+                  {patientsList?.map((type) => (
                     <MenuItem key={type.id} value={type.id}>
                       {type.firstname + " " + type.lastname}
                     </MenuItem>
@@ -190,104 +265,188 @@ const EventAddEditForm: React.FC<EventAddEditFormProps> = ({
                 </TextField>
               )}
             />
-            <Controller
-              name="dateFrom"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  id="date"
-                  type="date"
-                  label="Data"
-                  defaultValue={startDate? getFormattedTime(startDate) : Date.now.toString()}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  {...field}
-                  fullWidth
-                  error={!!errors.dateFrom}
-                  helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    field.onChange(event);
-                    handleDateChanged(event.target.value);
-                  }}
-                ></TextField>
-              )}
-            />
-            <Controller
-              name="timeFrom"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  select
-                  label="Wybierz termin"
-                  defaultValue={startTime? startTime : ""}
-                  maxRows={5}
-                  {...field}
-                  fullWidth
-                  error={!!errors.timeFrom}
-                  helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
-                >
-                  {availableDays.map((type) => (
-                    <MenuItem key={type.timeFrom} value={type.timeFrom}>
-                      {getFormattedTime(new Date(type.timeFrom))}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Dodatkowe uwagi"
-                  multiline
-                  fullWidth
-                  variant="outlined"
-                  error={!!errors.description}
-                />
-              )}
-            />
-            
-            <Stack
-              direction="row"
-              spacing={5}
-              my={3}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Button
-                type="submit"
-                variant="contained"
-                color="success"
-                endIcon={
-                  isEdit ? (
-                    <>
-                      {" "}
-                      <SaveAsIcon />
-                    </>
-                  ) : (
-                    <>
-                      <PostAddIcon />
-                    </>
-                  )
-                }
+          )}
+          <Controller
+            name="vacId"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                select
+                label="Szczepionka"
+                {...field}
+                fullWidth
+                error={!!errors.vacId}
+                helperText={errors.vacId ? errors.vacId?.message : ""}
               >
-                {isEdit ? "Zapisz zmiany" : "Zapisz wizytę"}
+                {vaccinationsList.map((type) => (
+                  <MenuItem key={type.id} value={type.id}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            name="doctorId"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                select
+                label="Doktor"
+                {...field}
+                fullWidth
+                error={!!errors.doctorId}
+                helperText={errors.doctorId ? errors.doctorId?.message : ""}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  field.onChange(event);
+                  handleDoctorChanged(event.target.value);
+                }}
+              >
+                {doctorsList.map((type) => (
+                  <MenuItem key={type.id} value={type.id}>
+                    {type.firstname + " " + type.lastname}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            name="dateFrom"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                id="date"
+                type="date"
+                label="Data"
+                defaultValue={
+                  startDate ? getFormattedTime(startDate) : Date.now.toString()
+                }
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                {...field}
+                fullWidth
+                error={!!errors.dateFrom}
+                helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  field.onChange(event);
+                  handleDateChanged(event.target.value);
+                }}
+              ></TextField>
+            )}
+          />
+          <Controller
+            name="timeFrom"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                select
+                label="Wybierz termin"
+                defaultValue={startTime ? startTime : ""}
+                maxRows={5}
+                {...field}
+                fullWidth
+                error={!!errors.timeFrom}
+                helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
+              >
+                {availableDays.map((type) => (
+                  <MenuItem key={type.timeFrom} value={type.timeFrom}>
+                    {getFormattedTime(new Date(type.timeFrom))}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Dodatkowe uwagi"
+                multiline
+                fullWidth
+                variant="outlined"
+                error={!!errors.description}
+              />
+            )}
+          />
+          {!isEdit && (
+            
+            <Stack direction={"column"} spacing={2}>
+              <Button
+                onClick={() => {
+                  handleFinishTerm(eventInformation);
+                }}
+                variant="contained"
+                color="info"
+                disabled={eventInformation == undefined}
+                endIcon={<CheckCircleOutlineIcon />}
+              >
+                Zatwierdź wizytę
               </Button>
               <Button
-                onClick={onClose}
+                onClick={() => {
+                  handleCancelTerm(eventInformation);
+                }}
                 variant="contained"
-                color="error"
+                color="warning"
+                disabled={eventInformation == undefined}
                 endIcon={<BlockIcon />}
               >
-                Zamknij
+                Anuluj wizytę
+              </Button>
+              <Button
+                onClick={() => {
+                  handlePrintCertificate(eventInformation);
+                }}
+                variant="contained"
+                color="secondary"
+                disabled={eventInformation == undefined}
+                endIcon={<PrintIcon />}
+              >
+                Wydrukuj zaświadczenie
               </Button>
             </Stack>
+          )}
+          <Stack
+            direction="row"
+            spacing={5}
+            my={3}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button
+              type="submit"
+              variant="contained"
+              color="success"
+              endIcon={
+                isEdit ? (
+                  <>
+                    {" "}
+                    <SaveAsIcon />
+                  </>
+                ) : (
+                  <>
+                    <PostAddIcon />
+                  </>
+                )
+              }
+            >
+              {isEdit ? "Zatwierdź zmiany" : "Zapisz wizytę"}
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="contained"
+              color="error"
+              endIcon={<BlockIcon />}
+            >
+              Zamknij
+            </Button>
           </Stack>
-          <br />
-        </form>
+        </Stack>
+        <br />
+      </form>
     </Container>
   );
 };

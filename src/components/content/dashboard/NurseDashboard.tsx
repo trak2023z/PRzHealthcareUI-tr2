@@ -15,6 +15,7 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  Skeleton,
   TextField,
   Typography,
 } from "@mui/material";
@@ -24,7 +25,7 @@ import "primeicons/primeicons.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.css";
 import EventAddEditForm from "../forms/EventAddEditForm";
-import { getDoctors, UserData } from "../../../api/ApiAccount";
+import { getDoctors, getPatients, UserData } from "../../../api/ApiAccount";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
 import {
@@ -34,18 +35,17 @@ import {
 import { EventInformation, getNurseEvents } from "../../../api/ApiEvent";
 import "../../../App.css";
 import { DataManager, ODataV4Adaptor, Query } from "@syncfusion/ej2-data";
+import { extend } from '@syncfusion/ej2-base';
 
-//Report designer source
 import "@boldreports/javascript-reporting-controls/Scripts/bold.report-viewer.min";
 import "@boldreports/javascript-reporting-controls/Content/material/bold.reports.all.min.css";
-//Data-Visualization
 import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.bulletgraph.min";
 import "@boldreports/javascript-reporting-controls/Scripts/data-visualization/ej.chart.min";
-//Reports react base
 import "@boldreports/react-reporting-components/Scripts/bold.reports.react.min";
 import {
   Agenda,
   Day,
+  EventSettingsModel,
   Inject,
   Month,
   PopupOpenEventArgs,
@@ -66,6 +66,7 @@ var viewerStyle = {
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
+  const [patientsList, setPatientsList] = useState<UserData[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<UserData>();
   const [vaccinationList, setVaccinationList] = useState<
     VaccinationInformation[]
@@ -84,6 +85,9 @@ export default function NurseDashboardContent() {
     setOpenAddEditEventDialog(false);
   };
 
+const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
+
+
   useEffect(() => {
     getNurseEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
@@ -96,6 +100,7 @@ export default function NurseDashboardContent() {
         } else {
           enqueueSnackbar(error.response.data.message, {
             anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
           });
@@ -112,6 +117,24 @@ export default function NurseDashboardContent() {
         } else {
           enqueueSnackbar(error.response.data.message, {
             anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+          });
+        }
+      });
+    getPatients()
+      .then((res) => {
+        setPatientsList(res.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        } else {
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
           });
@@ -128,6 +151,7 @@ export default function NurseDashboardContent() {
         } else {
           enqueueSnackbar(error.response.data.message, {
             anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
             variant: "error",
             autoHideDuration: 5000,
           });
@@ -159,18 +183,16 @@ export default function NurseDashboardContent() {
   }
   function onExportProgressChanged(event: any) {
     if (event.stage === "beginExport") {
-        console.log(event.stage);
-    }
-    else if (event.stage === "exportStarted") {
-        console.log(event.stage);
-    }
-    else if (event.stage === "preparation") {
-        console.log(event.stage);
-        console.log(event.format);
-        console.log(event.preparationStage);
+      console.log(event.stage);
+    } else if (event.stage === "exportStarted") {
+      console.log(event.stage);
+    } else if (event.stage === "preparation") {
+      console.log(event.stage);
+      console.log(event.format);
+      console.log(event.preparationStage);
     }
     event.handled = true;
-}
+  }
 
   addLocale("pl", {
     firstDayOfWeek: 1,
@@ -262,7 +284,7 @@ export default function NurseDashboardContent() {
           overflow: "auto",
         }}
       >
-        <BoldReportViewerComponent
+        {/* <BoldReportViewerComponent
           id="reportviewer-container"
           reportServiceUrl={
             "http://192.168.56.1:5000/api/ReportViewer"}
@@ -270,7 +292,7 @@ export default function NurseDashboardContent() {
           parameterSettings={parameterSettings}
           parameters={parameters}
           exportProgressChanged = {onExportProgressChanged}
-        ></BoldReportViewerComponent>
+        ></BoldReportViewerComponent> */}
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -280,7 +302,9 @@ export default function NurseDashboardContent() {
             </Grid>
             <Grid item xs={12}>
               {doctorsList.length === 0 ? (
-                <div>Loading...</div>
+                <div>
+                  <Skeleton variant="rounded" height={60} />
+                </div>
               ) : (
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
                   <TextField
@@ -357,13 +381,15 @@ export default function NurseDashboardContent() {
                 }}
               >
                 {eventList === undefined ? (
-                  <div>Loading</div>
+                  <Skeleton variant="rounded" height={200} />
                 ) : (
                   <div>
                     <ScheduleComponent
                       height="550px"
+                      currentView="WorkWeek"
                       selectedDate={new Date()}
                       popupOpen={onPopupOpen}
+                      eventSettings={eventSettings}
                       timeScale={{ enable: true, interval: 15, slotCount: 1 }}
                     >
                       <ViewsDirective>
@@ -385,7 +411,7 @@ export default function NurseDashboardContent() {
         </Container>
       </Box>
       {startDate === null || startDate === undefined ? (
-        <div>Loading</div>
+        <div><Skeleton variant="rounded" height={60} /></div>
       ) : (
         <Dialog
           open={openAddEditEventDialog}
@@ -395,9 +421,11 @@ export default function NurseDashboardContent() {
             <EventAddEditForm
               onClose={handleCloseAddEditEventDialog}
               doctorsList={doctorsList}
+              patientsList={patientsList}
               vaccinationsList={vaccinationList}
               startDate={startDate ? startDate : undefined}
               startTime={startTime ? startTime : undefined}
+              isPatient={false}
             />
           </DialogContent>
         </Dialog>
