@@ -24,9 +24,12 @@ import { useSnackbar } from "notistack";
 import { SetStateAction, useState } from "react";
 import prz_logo from "../../assets/prz_logo.png";
 import { Stack } from "@mui/material";
+import { validateCaptcha } from "../../api/ApiCaptcha";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignIn() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [captchaResponse, setCaptchaResponse] = useState("");
 
   const { isAuthenticated } = UseAuthenticatedUser();
   const {
@@ -46,34 +49,63 @@ export default function SignIn() {
   };
 
   const handleLogin = (data: LoginData) => {
-    loginAccount(data)
-      .then((res) => {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("login", res.data.login);
-        localStorage.setItem("accId", res.data.accId);
-        localStorage.setItem("name", res.data.name);
-        localStorage.setItem("atyId", res.data.atyId.toString());
-        navigate("/");
-      })
-      .catch((error) => {
-        if (
-          error.response.data.message != null &&
-          error.response.data.message != ""
-        ) {
-          enqueueSnackbar(error.response.data.message, {
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-            variant: "error",
-            autoHideDuration: 5000,
-            preventDuplicate: true,
-            onClick: () => closeSnackbar(),
+    // if (!captchaResponse) {
+    //   enqueueSnackbar("Uzupełnij Captcha", {
+    //     anchorOrigin: { vertical: "top", horizontal: "right" },
+    //     variant: "error",
+    //     autoHideDuration: 5000,
+    //     preventDuplicate: true,
+    //     onClick: () => closeSnackbar(),
+    //   });
+    //   return;
+    // }
+    // const captchaRequest = { key: "6LfJZt8lAAAAABIRlVspQyADD7aMNA1uAn_o19ii" };
+    // validateCaptcha(captchaRequest)
+    //   .then((res) => {
+        loginAccount(data)
+          .then((res) => {
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("login", res.data.login);
+            localStorage.setItem("accId", res.data.accId);
+            localStorage.setItem("name", res.data.name);
+            localStorage.setItem("atyId", res.data.atyId.toString());
+            navigate("/");
+          })
+          .catch((error) => {
+            if (
+              error.response.data.message != null &&
+              error.response.data.message != ""
+            ) {
+              enqueueSnackbar(error.response.data.message, {
+                anchorOrigin: { vertical: "top", horizontal: "right" },
+                variant: "error",
+                autoHideDuration: 5000,
+                preventDuplicate: true,
+                onClick: () => closeSnackbar(),
+              });
+            }
           });
-        }
-      });
+      //}
+      // )
+      // .catch((error) => {
+      //   setCaptchaResponse('');
+      //   enqueueSnackbar(error.response.data.message, {
+      //     anchorOrigin: { vertical: "top", horizontal: "right" },
+      //     variant: "error",
+      //     autoHideDuration: 5000,
+      //     preventDuplicate: true,
+      //     onClick: () => closeSnackbar(),
+      //   });
+      // });
   };
 
   if (isAuthenticated) {
     return <Navigate to={"/"} replace />;
   }
+
+  const handleCaptchaChange = (response: string | null) => {
+    setCaptchaResponse(response || "");
+  };
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
@@ -137,6 +169,10 @@ export default function SignIn() {
               error={!!errors?.password}
               autoComplete="current-password"
               {...register("password")}
+            />
+            <ReCAPTCHA
+              sitekey={"6LfJZt8lAAAAABIRlVspQyADD7aMNA1uAn_o19ii"}
+              onChange={handleCaptchaChange}
             />
             <Button
               type="submit"
