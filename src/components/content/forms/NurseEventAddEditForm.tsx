@@ -11,6 +11,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   EventInformation,
   cancelEventTerm,
+  editEventTerm,
   finishEventTerm,
   getAvailableDays,
   getSelectedEvent,
@@ -72,6 +73,10 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
   const [selectedVaccination, setSelectedVaccination] =
     useState<VaccinationInformation>();
 
+  const [canConfirm, setCanConfirm] = useState(false);
+  const [canCancel, setCanCancel] = useState(false);
+  const [canPrint, setCanPrint] = useState(false);
+
   let navigate = useNavigate();
   const theme = createTheme();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -83,31 +88,46 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
   });
 
   useEffect(() => {
-    if(!!eventInformation){
-      getAvailableDays(String(eventInformation?.dateFrom), String(eventInformation?.doctorId))
-          .then((res) => {
-            setAvailableDays(res.data);
-          })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              localStorage.clear();
-              navigate("/login");
-            }
-            enqueueSnackbar(error.response.data.message, {
-              anchorOrigin: { vertical: "top", horizontal: "right" },
-              preventDuplicate: true,
-              variant: "error",
-              autoHideDuration: 5000,
-              onClick: () => {
-                closeSnackbar();
-              },
-            });
-          });
+    if (!!eventInformation) {
+      if (eventInformation.type == 1) {
+        setCanConfirm(false);
+        setCanCancel(false);
+        setCanPrint(false);
+      } else if (eventInformation.type == 2) {
+        setCanConfirm(true);
+        setCanCancel(true);
+        setCanPrint(false);
+      } else if (eventInformation.type == 4) {
+        setCanConfirm(false);
+        setCanCancel(false);
+        setCanPrint(true);
       }
+      getAvailableDays(
+        String(eventInformation?.dateFrom),
+        String(eventInformation?.doctorId)
+      )
+        .then((res) => {
+          setAvailableDays(res.data);
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
+          }
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
+        });
       
+    }
   }, []);
 
-  
   const handleVaccinationChanged = (data: String) => {
     if (data != null) {
       setSelectedVaccination(
@@ -119,6 +139,9 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
     if (data != undefined) {
       finishEventTerm(data)
         .then((res) => {
+          setCanConfirm(false);
+          setCanCancel(false);
+          setCanPrint(true);
           enqueueSnackbar("Wizyta została zakończona", {
             anchorOrigin: { vertical: "top", horizontal: "right" },
             preventDuplicate: true,
@@ -130,7 +153,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
             },
           });
           if (eventInformation !== undefined) {
-            eventInformation.type = 7;
+            eventInformation.type = 4;
           }
         })
         .catch((error) => {
@@ -154,10 +177,13 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
     if (data != undefined) {
       cancelEventTerm(data)
         .then((res) => {
+          setCanConfirm(false);
+          setCanCancel(false);
+          setCanPrint(false);
           enqueueSnackbar("Wizyta została odwołana", {
             anchorOrigin: { vertical: "top", horizontal: "right" },
             preventDuplicate: true,
-            variant: "error",
+            variant: "success",
             autoHideDuration: 5000,
             onClick: () => {
               closeSnackbar();
@@ -252,7 +278,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
   };
 
   const getFormattedTime = (dateToFormat: Date) => {
-    const actualDate = new Date(dateToFormat); 
+    const actualDate = new Date(dateToFormat);
     return (
       padTo2Digits(actualDate.getHours().toString()) +
       ":" +
@@ -260,46 +286,86 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
     );
   };
   const getFormattedDate = (dateToFormat: Date) => {
-    const actualDate = new Date(dateToFormat); 
-    const formatDate = actualDate.getDate() < 10 ? `0${actualDate.getDate()}`:actualDate.getDate();
-    const formatMonth = actualDate.getMonth() < 10 ? `0${actualDate.getMonth()}`: actualDate.getMonth();
-    const formattedDate = [actualDate.getFullYear(), formatMonth, formatDate].join('-');
+    const actualDate = new Date(dateToFormat);
+    const formatDate =
+      actualDate.getDate() < 10
+        ? `0${actualDate.getDate()}`
+        : actualDate.getDate();
+    const formatMonth =
+      actualDate.getMonth() < 10
+        ? `0${actualDate.getMonth()}`
+        : actualDate.getMonth();
+    const formattedDate = [
+      actualDate.getFullYear(),
+      formatMonth,
+      formatDate,
+    ].join("-");
     return formattedDate;
-  }
+  };
 
   const submitHandler: SubmitHandler<EventInformation> = (
     data: EventInformation
   ) => {
-    takeEventTerm(data)
-      .then((res: any) => {
-        enqueueSnackbar(
-          isPatient
-            ? "Wizyta została zarejestrowana. Informacja została wysłana na Twoją skrzynkę pocztową!"
-            : "Wizyta została zarejestrowana. Informacja została wysłana na skrzynkę pocztową pacjenta!",
-          {
+    if (!!data.id) {
+      editEventTerm(data)
+        .then((res: any) => {
+          enqueueSnackbar("Wizyta została zaktualizowana", {
             anchorOrigin: { vertical: "top", horizontal: "right" },
             variant: "success",
             autoHideDuration: 8000,
+            preventDuplicate: true,
             onClick: () => {
               closeSnackbar();
             },
+          });
+        })
+        .catch((error: any) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
           }
-        );
-      })
-      .catch((error: any) => {
-        if (error.response.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
-        enqueueSnackbar(error.response.data.message, {
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-          variant: "error",
-          autoHideDuration: 5000,
-          onClick: () => {
-            closeSnackbar();
-          },
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000,
+            preventDuplicate: true,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
         });
-      });
+    } else {
+      takeEventTerm(data)
+        .then((res: any) => {
+          enqueueSnackbar(
+            "Wizyta została zarejestrowana. Informacja została wysłana na skrzynkę pocztową pacjenta!",
+            {
+              anchorOrigin: { vertical: "top", horizontal: "right" },
+              variant: "success",
+              autoHideDuration: 8000,
+              preventDuplicate: true,
+              onClick: () => {
+                closeSnackbar();
+              },
+            }
+          );
+        })
+        .catch((error: any) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
+          }
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            variant: "error",
+            autoHideDuration: 5000,
+            preventDuplicate: true,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
+        });
+    }
   };
 
   const {
@@ -309,6 +375,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
   } = useForm<EventInformation>({
     resolver: yupResolver(addEventSchema),
     defaultValues: {
+      id: eventInformation?.id,
       vacId: eventInformation?.vacId,
       doctorId: newEventDoctor
         ? newEventDoctor?.id
@@ -342,7 +409,9 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                   {...field}
                   fullWidth
                   disabled={isEdit}
-                  defaultValue={eventInformation? eventInformation?.accId : undefined}
+                  defaultValue={
+                    eventInformation ? eventInformation?.accId : undefined
+                  }
                   error={!!errors.accId}
                   helperText={errors.accId ? errors.accId?.message : ""}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -368,9 +437,11 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                   label="Szczepionka"
                   {...field}
                   fullWidth
-                  defaultValue={eventInformation? eventInformation?.vacId : undefined}
+                  defaultValue={
+                    eventInformation ? eventInformation?.vacId : undefined
+                  }
                   error={!!errors.vacId}
-                  disabled={eventInformation?.type === 7}
+                  disabled={eventInformation?.type === 4}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     field.onChange(event);
                     handleVaccinationChanged(event.target.value);
@@ -407,95 +478,110 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                 : selectedDoctor
             }
           ></TextField>
-          {!!eventInformation && !!availableDays? (<Controller
-            name="dateFrom"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="date"
-                type="date"
-                label="Data"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                {...field}
-                fullWidth
-                disabled={true}
-                error={!!errors.dateFrom}
-                helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  field.onChange(event);
-                  handleDateChanged(event.target.value);
-                }}
-              ></TextField>
-            )}
-          />
-          ) : (<Controller
-            name="dateFrom"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="date"
-                type="date"
-                label="Data"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                {...field}
-                fullWidth
-                disabled={true}
-                defaultValue={newEventStartTime? getFormattedDate(new Date(newEventStartTime)) : undefined}
-                error={!!errors.dateFrom}
-                helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  field.onChange(event);
-                  handleDateChanged(event.target.value);
-                }}
-              ></TextField>
-            )}
-          />)}
-          {!!eventInformation && !!availableDays? (<Controller
-            name="timeFrom"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                
-                label="Termin"
-                maxRows={5}
-                {...field}
-                fullWidth
-                defaultValue={eventInformation? getFormattedTime(new Date(eventInformation?.timeFrom)) : undefined}
-                disabled={true}
-                error={!!errors.timeFrom}
-                helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
-              >
-              </TextField>
-            )}
-          />): (
+          {!!eventInformation && !!availableDays ? (
             <Controller
-            name="timeFrom"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                label="Termin"
-                maxRows={5}
-                {...field}
-                fullWidth
-                defaultValue={newEventStartTime? getFormattedTime(new Date(newEventStartTime)) : undefined}
-                disabled={true}
-                error={!!errors.timeFrom}
-                helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
-              >
-                {availableDays.map((type) => (
-                  <MenuItem key={type.timeFrom} value={type.timeFrom}>
-                    {getFormattedTime(new Date(type.timeFrom))}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+              name="dateFrom"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  id="date"
+                  type="date"
+                  label="Data"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  {...field}
+                  fullWidth
+                  disabled={true}
+                  error={!!errors.dateFrom}
+                  helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(event);
+                    handleDateChanged(event.target.value);
+                  }}
+                ></TextField>
+              )}
+            />
+          ) : (
+            <Controller
+              name="dateFrom"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  id="date"
+                  type="date"
+                  label="Data"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  {...field}
+                  fullWidth
+                  disabled={true}
+                  defaultValue={
+                    newEventStartTime
+                      ? getFormattedDate(new Date(newEventStartTime))
+                      : undefined
+                  }
+                  error={!!errors.dateFrom}
+                  helperText={errors.dateFrom ? errors.dateFrom?.message : ""}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(event);
+                    handleDateChanged(event.target.value);
+                  }}
+                ></TextField>
+              )}
+            />
           )}
-          
+          {!!eventInformation && !!availableDays ? (
+            <Controller
+              name="timeFrom"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  label="Termin"
+                  maxRows={5}
+                  {...field}
+                  fullWidth
+                  defaultValue={
+                    eventInformation
+                      ? getFormattedTime(new Date(eventInformation?.timeFrom))
+                      : undefined
+                  }
+                  disabled={true}
+                  error={!!errors.timeFrom}
+                  helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
+                ></TextField>
+              )}
+            />
+          ) : (
+            <Controller
+              name="timeFrom"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  label="Termin"
+                  maxRows={5}
+                  {...field}
+                  fullWidth
+                  defaultValue={
+                    newEventStartTime
+                      ? getFormattedTime(new Date(newEventStartTime))
+                      : undefined
+                  }
+                  disabled={true}
+                  error={!!errors.timeFrom}
+                  helperText={errors.timeFrom ? errors.timeFrom?.message : ""}
+                >
+                  {availableDays.map((type) => (
+                    <MenuItem key={type.timeFrom} value={type.timeFrom}>
+                      {getFormattedTime(new Date(type.timeFrom))}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          )}
+
           {isEdit && (
             <Stack direction={"column"} spacing={2}>
               <Button
@@ -504,9 +590,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                 }}
                 variant="contained"
                 color="info"
-                disabled={
-                  eventInformation === undefined || eventInformation.type === 7
-                }
+                disabled={!canConfirm}
                 endIcon={<CheckCircleOutlineIcon />}
               >
                 Potwierdź wizytę
@@ -517,9 +601,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                 }}
                 variant="contained"
                 color="warning"
-                disabled={
-                  eventInformation === undefined || eventInformation.type === 7
-                }
+                disabled={!canCancel}
                 endIcon={<BlockIcon />}
               >
                 Anuluj wizytę
@@ -530,9 +612,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
                 }}
                 variant="contained"
                 color="secondary"
-                disabled={
-                  eventInformation === undefined || eventInformation.type !== 7
-                }
+                disabled={!canPrint}
                 endIcon={<PrintIcon />}
               >
                 Wydrukuj zaświadczenie
@@ -550,7 +630,7 @@ const NurseEventAddEditForm: React.FC<NurseEventAddEditFormProps> = ({
               type="submit"
               variant="contained"
               color="success"
-              disabled={eventInformation?.type === 7}
+              disabled={eventInformation?.type === 4}
               endIcon={
                 isEdit ? (
                   <>

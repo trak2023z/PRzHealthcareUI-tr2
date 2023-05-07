@@ -61,6 +61,7 @@ import {
 } from "@syncfusion/ej2-react-schedule";
 import PatientEventAddEditForm from "../forms/PatientEventAddEditForm";
 import { EventMappedInformation } from "./NurseDashboard";
+import { format } from 'date-fns'
 
 declare let BoldReportViewerComponent: any;
 
@@ -148,7 +149,8 @@ export default function ClientDashboardContent() {
   }, []);
 
   function onPopupOpen(args: PopupOpenEventArgs): void {
-    if(selectedDoctor === undefined || (args.data?.Id > 0 )){
+    const newDate = new Date()
+    if(selectedDoctor === undefined || (args.data?.Id > 0 ) || (args.data?.startTime < new Date()) || (args.data?.startTime > new Date(newDate.setMonth(newDate.getMonth()+2)))){
       args.cancel = true;
       return;
     }
@@ -197,6 +199,7 @@ export default function ClientDashboardContent() {
         StartTime: new Date(event.timeFrom),
         EndTime: new Date(event.timeTo),
         Subject: event.description,
+        IsAllDay: false,
         Color: event.accId === Number(localStorage.getItem("accId")) ? "#00b33c" : "#4d4dff",
       }));
     setMappedEvents(mappedEventsTemp);
@@ -279,11 +282,6 @@ export default function ClientDashboardContent() {
           overflow: "auto",
         }}
       >
-        {/* <BoldReportViewerComponent
-     id="reportviewer-container"
-     reportServiceUrl = {'https://demos.boldreports.com/services/api/ReportViewer'}
-     reportPath = {'../../../assets/resources/ZaswiadczenieCOVID.rdl'} >
-     </BoldReportViewerComponent> */}
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>

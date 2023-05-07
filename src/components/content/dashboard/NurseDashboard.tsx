@@ -98,7 +98,14 @@ export default function NurseDashboardContent() {
     getNurseEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
         setEventList(res.data);
-        handleRefreshSchedule(16);
+        
+        if(!!selectedDoctor){
+          handleRefreshSchedule(selectedDoctor.id);
+        }
+        else{
+          handleRefreshSchedule(16);
+        }
+        
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -219,7 +226,6 @@ export default function NurseDashboardContent() {
   }
 
   function onPopupOpen(args: PopupOpenEventArgs): void {
-    console.log(args.data)
     setNewEventStart(args.data?.startTime)
     if (args.data?.Id !== undefined) {
       getSelectedEvent(args.data?.Id)

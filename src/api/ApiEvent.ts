@@ -65,3 +65,8 @@ export const cancelEventTerm = (data: EventInformation) => {
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });
 };
+export const editEventTerm = (data: EventInformation) => {
+  return Api.patch("/event/editterm", data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+};

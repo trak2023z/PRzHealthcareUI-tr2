@@ -117,9 +117,6 @@ function GlobalSettings() {
     setOpenAddEditVaccinationDialog(true);
   }
   function handleSelectedNotificationType(id: any) {
-    console.log(
-      notificationTypesList.filter((notif) => notif.id == Number(id))[0]
-    );
     setSelectedNotificationType(
       notificationTypesList.filter((notif) => notif.id == Number(id))[0]
     );

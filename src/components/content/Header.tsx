@@ -96,7 +96,7 @@ export default function Header() {
             >
               Profil
             </MenuItem>
-            {Number(localStorage.getItem("atyId")) === 1006? (<MenuItem
+            {localStorage.getItem("atyId") === "4"? (<MenuItem
               onClick={() => {
                 navigate("/globalsettings");
                 handleCloseMenu();

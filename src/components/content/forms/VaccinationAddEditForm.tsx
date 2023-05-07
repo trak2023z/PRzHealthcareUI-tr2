@@ -39,7 +39,6 @@ const VaccinationAddEditForm: React.FC<VaccinationAddEditFormProps> = ({
   const submitHandler: SubmitHandler<VaccinationInformation> = (
     data: VaccinationInformation
   ) => {
-    console.log(data);
     {
       isEdit
         ? editVaccination(data)

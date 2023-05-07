@@ -48,7 +48,6 @@ const SignUpForm: React.FC<SignUpFormProps> = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const submitHandler: SubmitHandler<RegisterData> = (data: RegisterData) => {
-    console.log(data);
     registerAccount(data)
       .then(() => {
         enqueueSnackbar(

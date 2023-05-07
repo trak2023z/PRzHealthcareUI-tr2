@@ -5,5 +5,5 @@ export const apiConfig = {
 };
 
 export default axios.create({
-  baseURL: `http://192.168.56.1:5000/`
+  baseURL: `https://przhealthcare-api-app.azurewebsites.net/`
 });

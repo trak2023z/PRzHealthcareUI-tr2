@@ -161,7 +161,6 @@ const PatientEventAddEditForm: React.FC<PatientEventAddEditFormProps> = ({
   const submitHandler: SubmitHandler<EventInformation> = (
     data: EventInformation
   ) => {
-    console.log(data);
     takeEventTerm(data)
       .then((res: any) => {
         enqueueSnackbar(
@@ -232,7 +231,7 @@ const PatientEventAddEditForm: React.FC<PatientEventAddEditFormProps> = ({
                   {...field}
                   fullWidth
                   error={!!errors.vacId}
-                  disabled={eventInformation?.type === 7}
+                  disabled={eventInformation?.type === 4}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     field.onChange(event);
                     handleVaccinationChanged(event.target.value);
@@ -324,7 +323,7 @@ const PatientEventAddEditForm: React.FC<PatientEventAddEditFormProps> = ({
               type="submit"
               variant="contained"
               color="success"
-              disabled={eventInformation?.type === 7}
+              disabled={eventInformation?.type === 4}
               endIcon={<PostAddIcon />}
             >
               Zapisz wizytę

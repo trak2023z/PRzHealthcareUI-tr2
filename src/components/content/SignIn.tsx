@@ -49,18 +49,19 @@ export default function SignIn() {
   };
 
   const handleLogin = (data: LoginData) => {
-    // if (!captchaResponse) {
-    //   enqueueSnackbar("Uzupełnij Captcha", {
-    //     anchorOrigin: { vertical: "top", horizontal: "right" },
-    //     variant: "error",
-    //     autoHideDuration: 5000,
-    //     preventDuplicate: true,
-    //     onClick: () => closeSnackbar(),
-    //   });
-    //   return;
-    // }
-    // const captchaRequest = { key: "6LfJZt8lAAAAABIRlVspQyADD7aMNA1uAn_o19ii" };
+    if (!captchaResponse) {
+      enqueueSnackbar("Uzupełnij Captcha", {
+        anchorOrigin: { vertical: "top", horizontal: "right" },
+        variant: "error",
+        autoHideDuration: 5000,
+        preventDuplicate: true,
+        onClick: () => closeSnackbar(),
+      });
+      return;
+    }
+    // const captchaRequest = { key: '6LftZ-wlAAAAAEbAOAsvn7hSufEGGzw5V73xFSs8' };
     // validateCaptcha(captchaRequest)
+    
     //   .then((res) => {
         loginAccount(data)
           .then((res) => {
@@ -85,7 +86,7 @@ export default function SignIn() {
               });
             }
           });
-      //}
+      // }
       // )
       // .catch((error) => {
       //   setCaptchaResponse('');
@@ -171,7 +172,7 @@ export default function SignIn() {
               {...register("password")}
             />
             <ReCAPTCHA
-              sitekey={"6LfJZt8lAAAAABIRlVspQyADD7aMNA1uAn_o19ii"}
+              sitekey={'6LftZ-wlAAAAAEbAOAsvn7hSufEGGzw5V73xFSs8'}
               onChange={handleCaptchaChange}
             />
             <Button
@@ -220,7 +221,6 @@ export default function SignIn() {
                   />
                   <Button
                     onClick={() => {
-                      console.log(reminderEmail);
                       resetPasswordReqeust(reminderEmail)
                         .then(() => {
                           enqueueSnackbar(

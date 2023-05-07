@@ -44,7 +44,7 @@ function App() {
                   </PrivateRoute>
                 }
               >
-                {localStorage.getItem("atyId") === "1006" ? (
+                {localStorage.getItem("atyId") === "2" || localStorage.getItem("atyId") === "3" || localStorage.getItem("atyId") === "4" ? (
                   <Route path="/" element={<NurseDashboardContent />} />
                 ) : (
                   <Route path="/" element={<ClientDashboardContent />} />
