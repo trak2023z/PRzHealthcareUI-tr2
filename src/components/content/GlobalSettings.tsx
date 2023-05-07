@@ -38,6 +38,11 @@ import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import VaccinationAddEditForm from "./forms/VaccinationAddEditForm";
+import {
+  NotificationTypeInformation,
+  getNotificationTypes,
+} from "../../api/ApiNotification";
+import NotificationTypeEditForm from "./forms/NotificationTypeEditForm";
 // import { FileUpload } from './content/FileUpload';
 
 function GlobalSettings() {
@@ -48,8 +53,16 @@ function GlobalSettings() {
   >([]);
   const [selectedVaccination, setSelectedVaccination] =
     useState<VaccinationInformation>();
+  const [notificationTypesList, setNotificationTypesList] = useState<
+    NotificationTypeInformation[]
+  >([]);
+  const [selectedNotificationType, setSelectedNotificationType] =
+    useState<NotificationTypeInformation>();
   const [openVaccinationsTable, setOpenVaccinationsTable] = useState(false);
+  const [openNotificationsTable, setOpenNotificationsTable] = useState(false);
   const [openAddEditVaccinationDialog, setOpenAddEditVaccinationDialog] =
+    useState(false);
+  const [openEditNotificationTypeDialog, setOpenEditNotificationTypeDialog] =
     useState(false);
   const [isVaccinationEdit, setIsVaccinationEdit] = useState(false);
 
@@ -57,6 +70,26 @@ function GlobalSettings() {
     getVaccinationList()
       .then((res) => {
         setVaccinationList(res.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        } else {
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 6000,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
+        }
+      });
+    getNotificationTypes()
+      .then((res) => {
+        setNotificationTypesList(res.data);
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -82,6 +115,16 @@ function GlobalSettings() {
     );
     setIsVaccinationEdit(true);
     setOpenAddEditVaccinationDialog(true);
+  }
+  function handleSelectedNotificationType(id: any) {
+    console.log(
+      notificationTypesList.filter((notif) => notif.id == Number(id))[0]
+    );
+    setSelectedNotificationType(
+      notificationTypesList.filter((notif) => notif.id == Number(id))[0]
+    );
+
+    setOpenEditNotificationTypeDialog(true);
   }
   function handleArchiveVaccination(id: any) {
     archiveVaccination(vaccinationList.filter((vac) => vac.id == Number(id))[0])
@@ -112,7 +155,7 @@ function GlobalSettings() {
           });
         }
       });
-      getVaccinationList()
+    getVaccinationList()
       .then((res) => {
         setVaccinationList(res.data);
       })
@@ -134,7 +177,9 @@ function GlobalSettings() {
       });
   }
   function handleUnarchiveVaccination(id: any) {
-    unarchiveVaccination(vaccinationList.filter((vac) => vac.id == Number(id))[0])
+    unarchiveVaccination(
+      vaccinationList.filter((vac) => vac.id == Number(id))[0]
+    )
       .then((res) => {
         enqueueSnackbar("Szczepionka aktywna", {
           anchorOrigin: { vertical: "top", horizontal: "right" },
@@ -162,7 +207,7 @@ function GlobalSettings() {
           });
         }
       });
-      getVaccinationList()
+    getVaccinationList()
       .then((res) => {
         setVaccinationList(res.data);
       })
@@ -190,6 +235,29 @@ function GlobalSettings() {
     getVaccinationList()
       .then((res) => {
         setVaccinationList(res.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        } else {
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 6000,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
+        }
+      });
+  };
+  const handleCloseEditNotificationTypeDialog = () => {
+    setOpenEditNotificationTypeDialog(false);
+    getNotificationTypes()
+      .then((res) => {
+        setNotificationTypesList(res.data);
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -299,13 +367,23 @@ function GlobalSettings() {
                               <Stack direction={"row"}>
                                 {vac.isActive ? (
                                   <Tooltip title="Archiwizuj">
-                                    <IconButton color="warning" onClick={() => {handleArchiveVaccination(vac.id)}}>
+                                    <IconButton
+                                      color="warning"
+                                      onClick={() => {
+                                        handleArchiveVaccination(vac.id);
+                                      }}
+                                    >
                                       <ArchiveIcon />
                                     </IconButton>
                                   </Tooltip>
                                 ) : (
                                   <Tooltip title="Aktywuj">
-                                    <IconButton color="success"onClick={() => {handleUnarchiveVaccination(vac.id)}}>
+                                    <IconButton
+                                      color="success"
+                                      onClick={() => {
+                                        handleUnarchiveVaccination(vac.id);
+                                      }}
+                                    >
                                       <UnarchiveIcon />
                                     </IconButton>
                                   </Tooltip>
@@ -350,6 +428,94 @@ function GlobalSettings() {
           </Table>
         </TableContainer>
       </Grid>
+      <Grid item xs={12}>
+        <TableContainer component={Paper}>
+          <Table aria-label="collapsible table">
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "center" }}>
+                  Powiadomienia
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <IconButton
+                    aria-label="expand row"
+                    size="small"
+                    onClick={() =>
+                      setOpenNotificationsTable(!openNotificationsTable)
+                    }
+                  >
+                    {openNotificationsTable ? (
+                      <KeyboardArrowUp />
+                    ) : (
+                      <KeyboardArrowDown />
+                    )}
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  style={{ paddingBottom: 0, paddingTop: 0 }}
+                  colSpan={6}
+                >
+                  <Collapse
+                    in={openNotificationsTable}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="center">Nazwa</TableCell>
+                          <TableCell style={{ width: 100 }} align="center">
+                            Akcja
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {notificationTypesList.map((notif) => (
+                          <TableRow
+                            key={notif.id}
+                            sx={{
+                              "&:last-child td, &:last-child th": { border: 0 },
+                            }}
+                          >
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              align="center"
+                            >
+                              {notif.name}
+                            </TableCell>
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              align="center"
+                            >
+                              <Tooltip title="Edytuj">
+                                <IconButton
+                                  onClick={() => {
+                                    handleSelectedNotificationType(notif.id);
+                                  }}
+                                >
+                                  <EditIcon color="info" />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Collapse>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Grid>
 
       <Dialog
         open={openAddEditVaccinationDialog}
@@ -362,6 +528,19 @@ function GlobalSettings() {
             onClose={handleCloseAddEditVaccinationDialog}
             vaccinationInformation={selectedVaccination}
             isEdit={isVaccinationEdit}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={openEditNotificationTypeDialog}
+        onClose={handleCloseEditNotificationTypeDialog}
+        maxWidth="md"
+        fullWidth={true}
+      >
+        <DialogContent>
+          <NotificationTypeEditForm
+            onClose={handleCloseEditNotificationTypeDialog}
+            notificationTypeInformation={selectedNotificationType}
           />
         </DialogContent>
       </Dialog>

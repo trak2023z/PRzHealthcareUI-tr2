@@ -74,8 +74,6 @@ export default function Header() {
             {/* } */}
           </IconButton>
           <Menu
-            id="demo-positioned-menu"
-            aria-labelledby="demo-positioned-button"
             anchorEl={anchorEl}
             open={open}
             onClose={handleCloseMenu}
@@ -98,14 +96,15 @@ export default function Header() {
             >
               Profil
             </MenuItem>
-            <MenuItem
+            {Number(localStorage.getItem("atyId")) === 1006? (<MenuItem
               onClick={() => {
                 navigate("/globalsettings");
                 handleCloseMenu();
               }}
             >
               Ustawienia
-            </MenuItem>
+            </MenuItem>) : (<div></div>)}
+            
             <MenuItem onClick={logout}>Wyloguj</MenuItem>
           </Menu>
         </IconButton>

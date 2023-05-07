@@ -3,9 +3,9 @@ import Api from "./ApiGlobal";
 export type EventInformation = {
   id: number;
   accId: number;
-  dateFrom: Date;
+  dateFrom: string;
   timeFrom: string;
-  dateTo: Date;
+  dateTo: string;
   timeTo: string;
   type: number;
   doctorId: number;
@@ -22,9 +22,14 @@ export type EventBasicInformation = {
   dateFrom: String;
   doctorId: String;
 };
+export const getSelectedEvent = (eventId: Number) => {
+  return Api.get("/event?eventId="+String(eventId), {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+};
 
-export const getUserEvents = (accountId: Number) => {
-  return Api.get("/event/getuserevents", {
+export const getBusyEvents = (accountId: Number) => {
+  return Api.get("/event/getbusyevents", {
     params: { accountId },
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });

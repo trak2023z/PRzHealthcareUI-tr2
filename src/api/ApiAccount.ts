@@ -63,6 +63,11 @@ export const confirmAccount = (hashCode: string | null) => {
     params: {hashCode}
   });
 }
+export const getSelectedUser = (userId: Number) => {
+  return Api.get('/account/getselecteduser/?userId='+String(userId), {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+}
 
 export const getDoctors = () => {
   return Api.get('/account/getdoctorslist', {

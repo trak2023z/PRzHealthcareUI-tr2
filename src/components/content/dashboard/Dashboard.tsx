@@ -24,7 +24,7 @@ import { addLocale, locale } from "primereact/api";
 import "primeicons/primeicons.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.css";
-import EventAddEditForm from "../forms/EventAddEditForm";
+import EventAddEditForm from "../forms/NurseEventAddEditForm";
 import { getDoctors, UserData } from "../../../api/ApiAccount";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -32,7 +32,7 @@ import {
   getVaccinationList,
   VaccinationInformation,
 } from "../../../api/ApiVaccination";
-import { EventInformation, getUserEvents } from "../../../api/ApiEvent";
+import { EventInformation, getBusyEvents } from "../../../api/ApiEvent";
 import { Outlet } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 
@@ -55,7 +55,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    getUserEvents(Number(localStorage.getItem("accId")))
+    getBusyEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
         setEventList(res.data);
       })
@@ -192,8 +192,6 @@ export default function Dashboard() {
             doctorsList={doctorsList}
             patientsList={undefined}
             vaccinationsList={vaccinationList}
-            startDate={undefined}
-            startTime={undefined}
             isPatient={true}
           />
         </DialogContent>

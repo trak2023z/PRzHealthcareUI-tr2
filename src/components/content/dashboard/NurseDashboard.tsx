@@ -18,13 +18,14 @@ import {
   Skeleton,
   TextField,
   Typography,
+  colors,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { addLocale, locale } from "primereact/api";
 import "primeicons/primeicons.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.css";
-import EventAddEditForm from "../forms/EventAddEditForm";
+import EventAddEditForm from "../forms/NurseEventAddEditForm";
 import { getDoctors, getPatients, UserData } from "../../../api/ApiAccount";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -32,7 +33,11 @@ import {
   getVaccinationList,
   VaccinationInformation,
 } from "../../../api/ApiVaccination";
-import { EventInformation, getNurseEvents } from "../../../api/ApiEvent";
+import {
+  EventInformation,
+  getNurseEvents,
+  getSelectedEvent,
+} from "../../../api/ApiEvent";
 import "../../../App.css";
 
 import "@boldreports/javascript-reporting-controls/Scripts/bold.report-viewer.min";
@@ -47,15 +52,27 @@ import {
   Inject,
   Month,
   PopupOpenEventArgs,
+  ResourceDirective,
+  ResourcesDirective,
   ScheduleComponent,
   ViewDirective,
   ViewsDirective,
   Week,
   WorkWeek,
 } from "@syncfusion/ej2-react-schedule";
+import { wait } from "@testing-library/user-event/dist/utils";
+import NurseEventAddEditForm from "../forms/NurseEventAddEditForm";
+
+export type EventMappedInformation = {
+  Id: number;
+  Subject: String;
+  StartTime: Date;
+  EndTime: Date;
+};
 
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
+  const [openAddEditEventDialogUndefined, setOpenAddEditEventDialogUndefined] = useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [patientsList, setPatientsList] = useState<UserData[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<UserData>();
@@ -66,23 +83,48 @@ export default function NurseDashboardContent() {
   const [doctorEventList, setDoctorEventList] = useState<EventInformation[]>(
     []
   );
-  const [startDate, setStartDate] = useState<Date>();
-  const [startTime, setStartTime] = useState<String>();
+  const [selectedEvent, setSelectedEvent] = useState<EventInformation>();
+  const [mappedEvents, setMappedEvents] = useState<EventMappedInformation[]>(
+    []
+  );
+  const [newEventStart, setNewEventStart] = useState<string>('');
 
   let navigate = useNavigate();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const handleCloseAddEditEventDialog = () => {
     setOpenAddEditEventDialog(false);
+    setOpenAddEditEventDialogUndefined(false);
+    getNurseEvents(Number(localStorage.getItem("accId")))
+      .then((res) => {
+        setEventList(res.data);
+        handleRefreshSchedule(16);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        } else {
+          enqueueSnackbar(error.response.data.message, {
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+            preventDuplicate: true,
+            variant: "error",
+            autoHideDuration: 5000,
+            onClick: () => {
+              closeSnackbar();
+            },
+          });
+        }
+      });
   };
 
-const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
-
+  const eventSettings: EventSettingsModel = { dataSource: mappedEvents };
 
   useEffect(() => {
     getNurseEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
         setEventList(res.data);
+        handleRefreshSchedule(16);
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -162,27 +204,57 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
       });
   }, []);
 
-  function onPopupOpen(args: PopupOpenEventArgs): void {
-    const hours = new Date(
-      args.data?.startTime ? args.data?.startTime?.toString() : new Date()
-    )
-      .getHours()
-      .toString()
-      .padStart(2, "0");
-    const minutes = new Date(
-      args.data?.startTime ? args.data?.startTime?.toString() : new Date()
-    )
-      .getMinutes()
-      .toString()
-      .padStart(2, "0");
-    const time = `${hours}:${minutes}`;
+  function handleRefreshSchedule(doctorId: Number): void {
+    const mappedEventsTemp = eventList
+      .filter((ev) => ev.doctorId === doctorId)
+      .map((event) => ({
+        Id: event.id,
+        StartTime: new Date(event.timeFrom),
+        EndTime: new Date(event.timeTo),
+        Subject: event.description,
+        IsAllDay: false,
+        Color: event.type === 7 ? "#00b33c" : "#4d4dff",
+      }));
+    setMappedEvents(mappedEventsTemp);
+  }
 
-    setStartDate(
-      new Date(args.data ? args.data.toString() : new Date().getDate())
-    );
-    setStartTime(time);
+  function onPopupOpen(args: PopupOpenEventArgs): void {
+    console.log(args.data)
+    setNewEventStart(args.data?.startTime)
+    if (args.data?.Id !== undefined) {
+      getSelectedEvent(args.data?.Id)
+        .then((res) => {
+          setSelectedEvent(res?.data);
+          setOpenAddEditEventDialog(true);
+          
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            navigate("/login");
+          } else {
+            enqueueSnackbar(error.response.data.message, {
+              anchorOrigin: { vertical: "top", horizontal: "right" },
+              preventDuplicate: true,
+              variant: "error",
+              autoHideDuration: 5000,
+              onClick: () => {
+                closeSnackbar();
+              },
+            });
+          }
+        });
+    } else {
+      setSelectedEvent(undefined);
+      setOpenAddEditEventDialog(true);
+      setOpenAddEditEventDialogUndefined(true);
+    }
+
     args.cancel = true;
-    setOpenAddEditEventDialog(true);
+  }
+  function onEventRendered(args: any) {
+    let categoryColor = args.data.Color;
+    args.element.style.backgroundColor = categoryColor;
   }
 
   addLocale("pl", {
@@ -292,6 +364,7 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
                           (ev) => ev.doctorId === Number(event.target.value)
                         )
                       );
+                      handleRefreshSchedule(Number(event.target.value));
                     }}
                   >
                     {doctorsList.map((type) => (
@@ -303,17 +376,7 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
                 </Paper>
               )}
             </Grid>
-            <Grid item xs={12} md={5} lg={4}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "6vh",
-                }}
-              >
-                <Typography align="center">Wizyty</Typography>
-              </Paper>
+            <Grid item xs={12}>
               <Paper
                 sx={{
                   p: 2,
@@ -321,84 +384,51 @@ const eventSettings: EventSettingsModel = { dataSource: doctorEventList };
                   flexDirection: "column",
                 }}
               >
-                <List disablePadding>
-                  {eventList
-                    .filter((ev) => ev.doctorId === selectedDoctor?.id)
-                    .map((event) => (
-                      <ListItem disablePadding key={event.id}>
-                        <ListItemText>* {event.timeFrom}</ListItemText>
-                      </ListItem>
-                    ))}
-                </List>
-                <br />
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setOpenAddEditEventDialog(true);
-                  }}
+                <ScheduleComponent
+                  height="60vh"
+                  currentView="WorkWeek"
+                  selectedDate={new Date()}
+                  popupOpen={onPopupOpen}
+                  eventRendered={onEventRendered}
+                  eventSettings={eventSettings}
+                  timeScale={{ enable: true, interval: 15, slotCount: 1 }}
                 >
-                  Zaplanuj wizytę
-                </Button>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={8}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {eventList === undefined ? (
-                  <Skeleton variant="rounded" height={200} />
-                ) : (
-                  <div>
-                    <ScheduleComponent
-                      height="550px"
-                      currentView="WorkWeek"
-                      selectedDate={new Date()}
-                      popupOpen={onPopupOpen}
-                      eventSettings={eventSettings}
-                      timeScale={{ enable: true, interval: 15, slotCount: 1 }}
-                    >
-                      <ViewsDirective>
-                        <ViewDirective
-                          option="WorkWeek"
-                          startHour="8:00"
-                          endHour="16:00"
-                        />
-                        <ViewDirective option="Day" showWeekend={false} />
-                      </ViewsDirective>
-                      <Inject services={[Day, WorkWeek, Month, Agenda]} />
-                    </ScheduleComponent>
-                  </div>
-                )}
+                  <ViewsDirective>
+                    <ViewDirective
+                      option="WorkWeek"
+                      startHour="8:00"
+                      endHour="16:00"
+                    />
+                    <ViewDirective option="Day" showWeekend={false} />
+                    <ViewDirective option="Month" showWeekend={false} />
+                  </ViewsDirective>
+                  <Inject services={[Day, WorkWeek, Month, Agenda]} />
+                </ScheduleComponent>
               </Paper>
             </Grid>
           </Grid>
           <Copyright sx={{ pt: 4 }} />
         </Container>
       </Box>
-      {startDate === null || startDate === undefined ? (
-        <div><Skeleton variant="rounded" height={60} /></div>
-      ) : (
+      <Suspense fallback={<Skeleton height={"50vh"} />}>
         <Dialog
-          open={openAddEditEventDialog}
+          open={openAddEditEventDialog && (!!selectedEvent || openAddEditEventDialogUndefined)}
           onClose={handleCloseAddEditEventDialog}
         >
           <DialogContent>
-            <EventAddEditForm
+            <NurseEventAddEditForm
               onClose={handleCloseAddEditEventDialog}
               doctorsList={doctorsList}
               patientsList={patientsList}
               vaccinationsList={vaccinationList.filter((vac) => vac.isActive)}
-              startDate={startDate ? startDate : undefined}
-              startTime={startTime ? startTime : undefined}
+              eventInformation={selectedEvent}
+              newEventStartTime={newEventStart}
+              newEventDoctor={selectedDoctor !== undefined? selectedDoctor : undefined}
               isPatient={false}
             />
           </DialogContent>
         </Dialog>
-      )}
+      </Suspense>
     </Box>
   );
 }
