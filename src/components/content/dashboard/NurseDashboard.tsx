@@ -220,7 +220,7 @@ export default function NurseDashboardContent() {
         EndTime: new Date(event.timeTo),
         Subject: event.description,
         IsAllDay: false,
-        Color: event.type === 7 ? "#00b33c" : "#4d4dff",
+        Color: event.type === 4 ? "#00b33c" : "#4d4dff",
       }));
     setMappedEvents(mappedEventsTemp);
   }
