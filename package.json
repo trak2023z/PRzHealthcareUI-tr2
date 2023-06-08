@@ -24,6 +24,7 @@
     "@types/react-calendar": "^3.9.0",
     "@types/react-dom": "^18.0.10",
     "axios": "^1.2.2",
+    "cldr-data": "^36.0.1",
     "create-react-class": "^15.7.0",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.7",
@@ -70,6 +71,7 @@
     ]
   },
   "devDependencies": {
-    "@types/react-google-recaptcha": "^2.1.5"
+    "@types/react-google-recaptcha": "^2.1.5",
+    "systemjs-plugin-json": "^0.3.0"
   }
 }

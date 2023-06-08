@@ -61,7 +61,106 @@ import {
 } from "@syncfusion/ej2-react-schedule";
 import PatientEventAddEditForm from "../forms/PatientEventAddEditForm";
 import { EventMappedInformation } from "./NurseDashboard";
-import { format } from 'date-fns'
+import { format } from "date-fns";
+import { Ajax, L10n, setCulture, loadCldr } from "@syncfusion/ej2-base";
+
+loadCldr(
+  require("cldr-data/supplemental/numberingSystems.json"),
+  require("cldr-data/main/pl/ca-gregorian.json"),
+  require("cldr-data/main/pl/numbers.json"),
+  require("cldr-data/main/pl/timeZoneNames.json")
+);
+
+L10n.load({
+  pl: {
+    schedule: {
+      day: "Dzień",
+      week: "Tydzień",
+      workWeek: "Tydzień pracy",
+      month: "Miesiąc",
+      year: "Rok",
+      agenda: "Program",
+      weekAgenda: "Program tygodniowy",
+      workWeekAgenda: "Agenda Tygodnia Pracy",
+      monthAgenda: "Agenda miesiąca",
+      today: "Dzisiaj",
+      noEvents: "Brak wydarzeń",
+      emptyContainer: "Na ten dzień nie zaplanowano żadnych wydarzeń.",
+      allDay: "Cały dzień",
+      start: "Początek",
+      end: "Koniec",
+      more: "więcej",
+      close: "Blisko",
+      cancel: "Anuluj",
+      noTitle: "(Bez tytułu)",
+      delete: "Usuń",
+      deleteEvent: "Usuń wydarzenie",
+      deleteMultipleEvent: "Usuń wiele wydarzeń",
+      selectedItems: "Wybrane elementy",
+      deleteSeries: "Cała seria",
+      edit: "Edytować",
+      editSeries: "Cała seria",
+      editEvent: "Wydarzenie",
+      createEvent: "Stwórz",
+      subject: "Przedmiot",
+      addTitle: "Dodaj tytuł",
+      moreDetails: "Więcej szczegółów",
+      save: "Zapisz",
+      editContent: "Jak chciałbyś zmienić spotkanie w serialu?",
+      deleteContent: "Czy na pewno chcesz usunąć to wydarzenie?",
+      deleteMultipleContent: "Czy na pewno chcesz usunąć wybrane wydarzenia?",
+      newEvent: "Wyjazd",
+      title: "Tytuł",
+      location: "Lokalizacja",
+      description: "Opis",
+      timezone: "Strefa czasowa",
+      startTimezone: "Uruchom strefę czasową",
+      endTimezone: "Koniec strefy czasowej",
+      repeat: "Powtarzać",
+      saveButton: "Zapisz",
+      cancelButton: "Anuluj",
+      deleteButton: "Usuń",
+      recurrence: "Nawrót",
+      wrongPattern: "Wzorzec powtarzania się jest nieprawidłowy.",
+      seriesChangeAlert:
+        "Czy chcesz anulować zmiany wprowadzone w określonych wystąpieniach tej serii i ponownie dopasować ją do całej serii?",
+      createError:
+        "Czas trwania wydarzenia musi być krótszy niż częstotliwość jego występowania. Skróć czas trwania lub zmień wzorzec cyklu w edytorze zdarzeń cyklicznych.",
+      sameDayAlert:
+        "Dwa wystąpienia tego samego zdarzenia nie mogą wystąpić tego samego dnia.",
+      occurenceAlert:
+        "Nie można przełożyć wystąpienia spotkania cyklicznego, jeśli pomija późniejsze wystąpienie tego samego spotkania.",
+      editRecurrence: "Edytuj cykl",
+      repeats: "Powtarza się",
+      alert: "Alarm",
+      startEndError: "Wybrana data końcowa występuje przed datą początkową.",
+      invalidDateError: "Wprowadzona wartość daty jest nieprawidłowa.",
+      blockAlert:
+        "Zdarzenia nie mogą być zaplanowane w zablokowanym przedziale czasowym.",
+      ok: "Dobrze",
+      yes: "tak",
+      no: "Nie",
+      occurrence: "Występowanie",
+      series: "Seria",
+      previous: "Poprzedni",
+      next: "Kolejny",
+      timelineDay: "Dzień na osi czasu",
+      timelineWeek: "Tydzień na osi czasu",
+      timelineWorkWeek: "Tydzień roboczy osi czasu",
+      timelineMonth: "Miesiąc osi czasu",
+      timelineYear: "Rok na osi czasu",
+      editFollowingEvent: "Następujące wydarzenia",
+      deleteTitle: "Usuń wydarzenie",
+      editTitle: "Edytuj wydarzenie",
+      beginFrom: "Zacząć od",
+      endAt: "Koniec o",
+      expandAllDaySection: "Rozwiń sekcję całodniową",
+      collapseAllDaySection: "Zwiń sekcję całodniową",
+      searchTimezone: "Wyszukaj strefę czasową",
+      noRecords: "Nic nie znaleziono",
+    },
+  },
+});
 
 declare let BoldReportViewerComponent: any;
 
@@ -95,7 +194,6 @@ export default function ClientDashboardContent() {
   const handleCloseAddEditEventDialog = () => {
     setOpenAddEditEventDialog(false);
   };
-
   useEffect(() => {
     getBusyEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
@@ -149,8 +247,13 @@ export default function ClientDashboardContent() {
   }, []);
 
   function onPopupOpen(args: PopupOpenEventArgs): void {
-    const newDate = new Date()
-    if(selectedDoctor === undefined || (args.data?.Id > 0 ) || (args.data?.startTime < new Date()) || (args.data?.startTime > new Date(newDate.setMonth(newDate.getMonth()+2)))){
+    const newDate = new Date();
+    if (
+      selectedDoctor === undefined ||
+      args.data?.Id > 0 ||
+      args.data?.startTime < new Date() ||
+      args.data?.startTime > new Date(newDate.setMonth(newDate.getMonth() + 2))
+    ) {
       args.cancel = true;
       return;
     }
@@ -200,7 +303,10 @@ export default function ClientDashboardContent() {
         EndTime: new Date(event.timeTo),
         Subject: event.description,
         IsAllDay: false,
-        Color: event.accId === Number(localStorage.getItem("accId")) ? "#00b33c" : "#4d4dff",
+        Color:
+          event.accId === Number(localStorage.getItem("accId"))
+            ? "#00b33c"
+            : "#4d4dff",
       }));
     setMappedEvents(mappedEventsTemp);
   }
@@ -339,6 +445,7 @@ export default function ClientDashboardContent() {
                     <ScheduleComponent
                       height="60vh"
                       currentView="WorkWeek"
+                      locale="pl"
                       selectedDate={new Date()}
                       popupOpen={onPopupOpen}
                       eventRendered={onEventRendered}

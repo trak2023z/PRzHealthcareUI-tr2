@@ -6,26 +6,17 @@ import Paper from "@mui/material/Paper";
 import Header from "../Header";
 import Copyright from "../Copyright";
 import {
-  Button,
   Dialog,
   DialogContent,
-  List,
-  ListItem,
-  ListItemText,
   MenuItem,
-  Select,
-  SelectChangeEvent,
   Skeleton,
   TextField,
-  Typography,
-  colors,
 } from "@mui/material";
 import { Suspense, useEffect, useState } from "react";
 import { addLocale, locale } from "primereact/api";
 import "primeicons/primeicons.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.css";
-import EventAddEditForm from "../forms/NurseEventAddEditForm";
 import { getDoctors, getPatients, UserData } from "../../../api/ApiAccount";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -52,16 +43,111 @@ import {
   Inject,
   Month,
   PopupOpenEventArgs,
-  ResourceDirective,
-  ResourcesDirective,
   ScheduleComponent,
   ViewDirective,
   ViewsDirective,
-  Week,
   WorkWeek,
 } from "@syncfusion/ej2-react-schedule";
-import { wait } from "@testing-library/user-event/dist/utils";
 import NurseEventAddEditForm from "../forms/NurseEventAddEditForm";
+import { Ajax, L10n, setCulture, loadCldr } from "@syncfusion/ej2-base";
+
+loadCldr(
+  require("cldr-data/supplemental/numberingSystems.json"),
+  require("cldr-data/main/pl/ca-gregorian.json"),
+  require("cldr-data/main/pl/numbers.json"),
+  require("cldr-data/main/pl/timeZoneNames.json")
+);
+
+L10n.load({
+  pl: {
+    schedule: {
+      day: "Dzień",
+      week: "Tydzień",
+      workWeek: "Tydzień pracy",
+      month: "Miesiąc",
+      year: "Rok",
+      agenda: "Program",
+      weekAgenda: "Program tygodniowy",
+      workWeekAgenda: "Agenda Tygodnia Pracy",
+      monthAgenda: "Agenda miesiąca",
+      today: "Dzisiaj",
+      noEvents: "Brak wydarzeń",
+      emptyContainer: "Na ten dzień nie zaplanowano żadnych wydarzeń.",
+      allDay: "Cały dzień",
+      start: "Początek",
+      end: "Koniec",
+      more: "więcej",
+      close: "Blisko",
+      cancel: "Anuluj",
+      noTitle: "(Bez tytułu)",
+      delete: "Usuń",
+      deleteEvent: "Usuń wydarzenie",
+      deleteMultipleEvent: "Usuń wiele wydarzeń",
+      selectedItems: "Wybrane elementy",
+      deleteSeries: "Cała seria",
+      edit: "Edytować",
+      editSeries: "Cała seria",
+      editEvent: "Wydarzenie",
+      createEvent: "Stwórz",
+      subject: "Przedmiot",
+      addTitle: "Dodaj tytuł",
+      moreDetails: "Więcej szczegółów",
+      save: "Zapisz",
+      editContent: "Jak chciałbyś zmienić spotkanie w serialu?",
+      deleteContent: "Czy na pewno chcesz usunąć to wydarzenie?",
+      deleteMultipleContent: "Czy na pewno chcesz usunąć wybrane wydarzenia?",
+      newEvent: "Wyjazd",
+      title: "Tytuł",
+      location: "Lokalizacja",
+      description: "Opis",
+      timezone: "Strefa czasowa",
+      startTimezone: "Uruchom strefę czasową",
+      endTimezone: "Koniec strefy czasowej",
+      repeat: "Powtarzać",
+      saveButton: "Zapisz",
+      cancelButton: "Anuluj",
+      deleteButton: "Usuń",
+      recurrence: "Nawrót",
+      wrongPattern: "Wzorzec powtarzania się jest nieprawidłowy.",
+      seriesChangeAlert:
+        "Czy chcesz anulować zmiany wprowadzone w określonych wystąpieniach tej serii i ponownie dopasować ją do całej serii?",
+      createError:
+        "Czas trwania wydarzenia musi być krótszy niż częstotliwość jego występowania. Skróć czas trwania lub zmień wzorzec cyklu w edytorze zdarzeń cyklicznych.",
+      sameDayAlert:
+        "Dwa wystąpienia tego samego zdarzenia nie mogą wystąpić tego samego dnia.",
+      occurenceAlert:
+        "Nie można przełożyć wystąpienia spotkania cyklicznego, jeśli pomija późniejsze wystąpienie tego samego spotkania.",
+      editRecurrence: "Edytuj cykl",
+      repeats: "Powtarza się",
+      alert: "Alarm",
+      startEndError: "Wybrana data końcowa występuje przed datą początkową.",
+      invalidDateError: "Wprowadzona wartość daty jest nieprawidłowa.",
+      blockAlert:
+        "Zdarzenia nie mogą być zaplanowane w zablokowanym przedziale czasowym.",
+      ok: "Dobrze",
+      yes: "tak",
+      no: "Nie",
+      occurrence: "Występowanie",
+      series: "Seria",
+      previous: "Poprzedni",
+      next: "Kolejny",
+      timelineDay: "Dzień na osi czasu",
+      timelineWeek: "Tydzień na osi czasu",
+      timelineWorkWeek: "Tydzień roboczy osi czasu",
+      timelineMonth: "Miesiąc osi czasu",
+      timelineYear: "Rok na osi czasu",
+      editFollowingEvent: "Następujące wydarzenia",
+      deleteTitle: "Usuń wydarzenie",
+      editTitle: "Edytuj wydarzenie",
+      beginFrom: "Zacząć od",
+      endAt: "Koniec o",
+      expandAllDaySection: "Rozwiń sekcję całodniową",
+      collapseAllDaySection: "Zwiń sekcję całodniową",
+      searchTimezone: "Wyszukaj strefę czasową",
+      noRecords: "Nic nie znaleziono",
+    },
+  },
+});
 
 export type EventMappedInformation = {
   Id: number;
@@ -72,7 +158,8 @@ export type EventMappedInformation = {
 
 export default function NurseDashboardContent() {
   const [openAddEditEventDialog, setOpenAddEditEventDialog] = useState(false);
-  const [openAddEditEventDialogUndefined, setOpenAddEditEventDialogUndefined] = useState(false);
+  const [openAddEditEventDialogUndefined, setOpenAddEditEventDialogUndefined] =
+    useState(false);
   const [doctorsList, setDoctorsList] = useState<UserData[]>([]);
   const [patientsList, setPatientsList] = useState<UserData[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<UserData>();
@@ -87,7 +174,7 @@ export default function NurseDashboardContent() {
   const [mappedEvents, setMappedEvents] = useState<EventMappedInformation[]>(
     []
   );
-  const [newEventStart, setNewEventStart] = useState<string>('');
+  const [newEventStart, setNewEventStart] = useState<string>("");
 
   let navigate = useNavigate();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -98,14 +185,12 @@ export default function NurseDashboardContent() {
     getNurseEvents(Number(localStorage.getItem("accId")))
       .then((res) => {
         setEventList(res.data);
-        
-        if(!!selectedDoctor){
+
+        if (!!selectedDoctor) {
           handleRefreshSchedule(selectedDoctor.id);
-        }
-        else{
+        } else {
           handleRefreshSchedule(16);
         }
-        
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -226,13 +311,12 @@ export default function NurseDashboardContent() {
   }
 
   function onPopupOpen(args: PopupOpenEventArgs): void {
-    setNewEventStart(args.data?.startTime)
+    setNewEventStart(args.data?.startTime);
     if (args.data?.Id !== undefined) {
       getSelectedEvent(args.data?.Id)
         .then((res) => {
           setSelectedEvent(res?.data);
           setOpenAddEditEventDialog(true);
-          
         })
         .catch((error) => {
           if (error.response.status === 401) {
@@ -393,6 +477,7 @@ export default function NurseDashboardContent() {
                 <ScheduleComponent
                   height="60vh"
                   currentView="WorkWeek"
+                  locale="pl"
                   selectedDate={new Date()}
                   popupOpen={onPopupOpen}
                   eventRendered={onEventRendered}
@@ -405,8 +490,18 @@ export default function NurseDashboardContent() {
                       startHour="8:00"
                       endHour="16:00"
                     />
-                    <ViewDirective option="Day" showWeekend={false} />
-                    <ViewDirective option="Month" showWeekend={false} />
+                    <ViewDirective
+                      option="Day"
+                      showWeekend={false}
+                      startHour="8:00"
+                      endHour="16:00"
+                    />
+                    <ViewDirective
+                      option="Month"
+                      showWeekend={false}
+                      startHour="8:00"
+                      endHour="16:00"
+                    />
                   </ViewsDirective>
                   <Inject services={[Day, WorkWeek, Month, Agenda]} />
                 </ScheduleComponent>
@@ -418,7 +513,10 @@ export default function NurseDashboardContent() {
       </Box>
       <Suspense fallback={<Skeleton height={"50vh"} />}>
         <Dialog
-          open={openAddEditEventDialog && (!!selectedEvent || openAddEditEventDialogUndefined)}
+          open={
+            openAddEditEventDialog &&
+            (!!selectedEvent || openAddEditEventDialogUndefined)
+          }
           onClose={handleCloseAddEditEventDialog}
         >
           <DialogContent>
@@ -429,7 +527,9 @@ export default function NurseDashboardContent() {
               vaccinationsList={vaccinationList.filter((vac) => vac.isActive)}
               eventInformation={selectedEvent}
               newEventStartTime={newEventStart}
-              newEventDoctor={selectedDoctor !== undefined? selectedDoctor : undefined}
+              newEventDoctor={
+                selectedDoctor !== undefined ? selectedDoctor : undefined
+              }
               isPatient={false}
             />
           </DialogContent>
